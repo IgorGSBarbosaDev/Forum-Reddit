@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 export function createIdSchema(fieldName: string) {
-  return z
-    .string()
-    .trim()
-    .min(1, `${fieldName} is required`);
+  return z.string().trim().min(1, `${fieldName} is required`);
 }
 
 export const postIdSchema = createIdSchema("postId");
