@@ -1,31 +1,35 @@
-# Forum Reddit API
+# Forum Reddit Monorepo
 
-Bootstrap inicial de uma API de forum estilo Reddit com:
+Monorepo com backend API e frontend web para o projeto de forum estilo Reddit.
 
-- Node.js
-- TypeScript
-- Express
-- Prisma
-- PostgreSQL
+## Workspaces
 
-## Scripts
+- `apps/api`: backend Node.js + TypeScript + Express + Prisma
+- `apps/web`: frontend React + TypeScript + Vite
+- `packages/shared-types`: contratos compartilhados (tipos de API)
+- `docs`: documentação funcional e técnica do projeto
 
-- `npm run dev`: sobe a API em modo watch
-- `npm run build`: compila o projeto
-- `npm run start`: executa a build compilada
-- `npm run prisma:generate`: gera o Prisma Client
-- `npm run prisma:migrate:dev`: cria/aplica migrations em desenvolvimento
-- `npm run prisma:studio`: abre o Prisma Studio
+## Scripts do root
+
+- `npm run dev`: sobe o backend (`apps/api`) em watch
+- `npm run dev:api`: mesmo comportamento do `dev`
+- `npm run dev:web`: sobe o frontend (`apps/web`)
+- `npm run build`: build de todos os workspaces com script `build`
+- `npm run test`: executa testes do backend
+- `npm run start`: executa backend compilado
+- `npm run prisma:generate`: gera Prisma Client para `apps/api`
+- `npm run prisma:migrate:dev`: roda migration no backend
+- `npm run prisma:studio`: abre Prisma Studio do backend
 
 ## Setup local
 
-1. Instale as dependencias:
+1. Instale dependências no root:
 
 ```bash
 npm install
 ```
 
-2. Ajuste o arquivo `.env` com sua conexao PostgreSQL.
+2. Ajuste o `.env` na raiz com `DATABASE_URL`.
 
 3. Gere o client do Prisma:
 
@@ -33,38 +37,20 @@ npm install
 npm run prisma:generate
 ```
 
-4. Crie a migration inicial:
-
-```bash
-npm run prisma:migrate:dev -- --name init
-```
-
-5. Rode a API:
+4. Rode o backend:
 
 ```bash
 npm run dev
 ```
 
-## Estrutura inicial
+5. Rode o frontend em outro terminal:
 
-- `src/server.ts`: bootstrap do servidor
-- `src/app.ts`: configuracao do Express
-- `src/routes/index.ts`: rota base e healthcheck
-- `src/lib/prisma.ts`: inicializacao do Prisma Client com adapter PostgreSQL
-- `prisma/schema.prisma`: modelagem inicial do dominio
-- `prisma.config.ts`: configuracao do Prisma 7
+```bash
+npm run dev:web
+```
 
-## Dominio coberto no schema
+## Observações
 
-O schema inicial contempla:
-
-- usuarios
-- postagens
-- comentarios encadeados com profundidade
-- curtidas em postagens e comentarios
-- postagens salvas
-- seguidores
-- preferencia de notificacao
-- eventos de notificacao assincronos para publicacao de postagens
-
-As regras de edicao, exclusao logica, anonimização e relacoes unicas ja ficaram refletidas no modelo inicial.
+- O frontend usa proxy de desenvolvimento para `/api` apontando para `http://localhost:3000`.
+- O contrato compartilhado inicial está em `packages/shared-types/src`.
+- Toda documentação do projeto foi consolidada em `docs/`.

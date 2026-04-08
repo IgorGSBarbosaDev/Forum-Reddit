@@ -1,44 +1,21 @@
 {
   "name": "forum-reddit",
   "version": "1.0.0",
-  "description": "API base para um forum estilo Reddit com Node.js, TypeScript, Express e Prisma.",
-  "main": "dist/server.js",
+  "private": true,
+  "description": "Forum Reddit monorepo (API + Web).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "test": "node --import tsx --test tests/**/*.test.ts",
-    "start": "node dist/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/IgorGSBarbosaDev/Forum-Reddit.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/IgorGSBarbosaDev/Forum-Reddit/issues"
-  },
-  "homepage": "https://github.com/IgorGSBarbosaDev/Forum-Reddit#readme",
-  "dependencies": {
-    "@prisma/adapter-pg": "^7.6.0",
-    "@prisma/client": "^7.6.0",
-    "dotenv": "^17.4.0",
-    "express": "^5.2.1",
-    "pg": "^8.20.0",
-    "prisma": "^7.6.0",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.7.2",
-    "@types/supertest": "^7.2.0",
-    "supertest": "^7.2.2",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "dev": "npm run dev -w @forum-reddit/api",
+    "dev:api": "npm run dev -w @forum-reddit/api",
+    "dev:web": "npm run dev -w @forum-reddit/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test -w @forum-reddit/api",
+    "start": "npm run start -w @forum-reddit/api",
+    "prisma:generate": "npm run prisma:generate -w @forum-reddit/api",
+    "prisma:migrate:dev": "npm run prisma:migrate:dev -w @forum-reddit/api",
+    "prisma:studio": "npm run prisma:studio -w @forum-reddit/api"
   }
 }
