@@ -13,9 +13,19 @@
     "dev:web": "npm run dev -w @forum-reddit/web",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test -w @forum-reddit/api",
+    "test:web": "npm run test -w @forum-reddit/web",
+    "test:all": "npm run test -w @forum-reddit/api; npm run test -w @forum-reddit/web",
     "start": "npm run start -w @forum-reddit/api",
     "prisma:generate": "npm run prisma:generate -w @forum-reddit/api",
     "prisma:migrate:dev": "npm run prisma:migrate:dev -w @forum-reddit/api",
     "prisma:studio": "npm run prisma:studio -w @forum-reddit/api"
+  },
+  "devDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }
