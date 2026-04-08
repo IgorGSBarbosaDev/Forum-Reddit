@@ -1,0 +1,33 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(160deg, #f4efe4 0%, #f5f7fb 100%);
+  color: #1f242b;
+}
+
+.app {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.card {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #d7dce8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.error {
+  color: #a12020;
+}

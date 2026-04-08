@@ -6,3 +6,4 @@ apps/*/dist
 .env.test
 apps/api/prisma/dev.db
 apps/api/prisma/dev.db-journal
+docs/
