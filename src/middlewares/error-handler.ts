@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 
 import { AuthenticationRequiredError } from "../errors/authentication-required-error";
+import { DomainError } from "../errors/domain-error";
 import { RequestValidationError } from "../errors/request-validation-error";
 
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
@@ -14,6 +15,14 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   }
 
   if (error instanceof AuthenticationRequiredError) {
+    response.status(error.statusCode).json({
+      message: error.message,
+      code: error.code,
+    });
+    return;
+  }
+
+  if (error instanceof DomainError) {
     response.status(error.statusCode).json({
       message: error.message,
       code: error.code,

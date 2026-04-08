@@ -37,10 +37,7 @@ export const limitSchema = createPaginationNumberSchema("limit", {
   max: MAX_LIMIT,
 });
 
-export const cursorSchema = z.string().trim().min(1).optional();
-
 export const paginationQuerySchema = z.object({
   page: pageSchema,
   limit: limitSchema,
-  cursor: cursorSchema,
 });
