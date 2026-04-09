@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
+import { useAuthSession } from "../../auth-context/auth-context";
 import { queryKeys } from "../../../shared/api/query-keys";
 import { useForumApi } from "../../../shared/api/use-forum-api";
 import { PaginationFooter } from "../../../shared/ui/pagination-footer";
@@ -28,9 +29,10 @@ export function UserFollowingPage() {
   const limit = Math.min(parsePositiveInt(searchParams.get("limit"), 20), 100);
 
   const api = useForumApi();
+  const { viewerId } = useAuthSession();
 
   const followingQuery = useQuery({
-    queryKey: queryKeys.users.following(userId ?? "", page, limit),
+    queryKey: queryKeys.users.following(userId ?? "", page, limit, viewerId),
     enabled: Boolean(userId),
     queryFn: async () => {
       if (!userId) {

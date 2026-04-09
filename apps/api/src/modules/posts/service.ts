@@ -5,6 +5,7 @@ import { ForbiddenError } from "../../errors/forbidden-error";
 import { NotFoundError } from "../../errors/not-found-error";
 import { createPaginationMeta } from "../../utils/pagination";
 import { NotificationEventsRepository } from "../notifications/repository";
+import { CurrentUserGuard } from "../users/current-user-guard";
 import { mapPostDetail, mapPostListItem } from "./mapper";
 import { PostsRepository } from "./repository";
 import type {
@@ -22,6 +23,7 @@ export class PostsService {
     private readonly prisma: PrismaClient,
     private readonly postsRepository: PostsRepository,
     private readonly notificationEventsRepository: NotificationEventsRepository,
+    private readonly currentUserGuard: CurrentUserGuard,
   ) {}
 
   async listPosts(query: ListPostsQuery, currentUserId?: string): Promise<PaginatedPostsResponse> {
@@ -47,6 +49,8 @@ export class PostsService {
   }
 
   async createPost(input: CreatePostInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const created = await this.prisma.$transaction(async (tx) => {
       const post = await this.postsRepository.createPost(
         {
@@ -65,6 +69,8 @@ export class PostsService {
   }
 
   async updatePost(postId: string, input: UpdatePostInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const post = await this.postsRepository.findPostStateById(postId);
 
     if (!post) {
@@ -84,6 +90,8 @@ export class PostsService {
   }
 
   async deletePost(postId: string, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const post = await this.postsRepository.findPostStateById(postId);
 
     if (!post) {
@@ -101,7 +109,9 @@ export class PostsService {
     return this.getPost(postId, currentUserId);
   }
 
-  async updateStatus(postId: string, input: UpdatePostStatusInput, currentUserId?: string) {
+  async updateStatus(postId: string, input: UpdatePostStatusInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const post = await this.postsRepository.findPostStateById(postId);
 
     if (!post) {
@@ -112,7 +122,9 @@ export class PostsService {
     return this.getPost(postId, currentUserId);
   }
 
-  async updatePinnedState(postId: string, input: UpdatePostPinInput, currentUserId?: string) {
+  async updatePinnedState(postId: string, input: UpdatePostPinInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const post = await this.postsRepository.findPostStateById(postId);
 
     if (!post) {

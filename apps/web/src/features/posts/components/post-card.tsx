@@ -25,7 +25,7 @@ function getAuthorLabel(post: PostSummary): string {
 }
 
 export function PostCard({ post }: PostCardProps) {
-  const { isAuthenticated } = useAuthSession();
+  const { hasActiveSession, isAuthenticated, sessionError } = useAuthSession();
 
   const likeMutation = useLikePostMutation(post.id);
   const unlikeMutation = useUnlikePostMutation(post.id);
@@ -36,8 +36,10 @@ export function PostCard({ post }: PostCardProps) {
   const isSaveBusy = saveMutation.isPending || unsaveMutation.isPending;
 
   async function handleToggleLike() {
-    if (!isAuthenticated) {
-      window.alert("Informe x-user-id no topo para curtir posts.");
+    if (!hasActiveSession) {
+      window.alert(sessionError ?? (isAuthenticated
+        ? "O usuario informado nao existe ou nao esta ativo."
+        : "Informe x-user-id no topo para curtir posts."));
       return;
     }
 
@@ -53,8 +55,10 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   async function handleToggleSave() {
-    if (!isAuthenticated) {
-      window.alert("Informe x-user-id no topo para salvar posts.");
+    if (!hasActiveSession) {
+      window.alert(sessionError ?? (isAuthenticated
+        ? "O usuario informado nao existe ou nao esta ativo."
+        : "Informe x-user-id no topo para salvar posts."));
       return;
     }
 
@@ -92,7 +96,7 @@ export function PostCard({ post }: PostCardProps) {
           ) : (
             <span>{getAuthorLabel(post)}</span>
           )}
-          {" • "}
+          {" - "}
           <time dateTime={post.createdAt}>{formatDateTime(post.createdAt)}</time>
         </p>
 

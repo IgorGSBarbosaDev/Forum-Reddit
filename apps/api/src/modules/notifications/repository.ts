@@ -20,9 +20,14 @@ export class NotificationEventsRepository {
       where: {
         processedAt: null,
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: [
+        {
+          createdAt: "asc",
+        },
+        {
+          id: "asc",
+        },
+      ],
       take: limit,
       select: {
         id: true,

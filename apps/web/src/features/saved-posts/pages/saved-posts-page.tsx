@@ -23,7 +23,7 @@ function parsePositiveInt(rawValue: string | null, fallback: number): number {
 }
 
 export function SavedPostsPage() {
-  const { auth, isAuthenticated } = useAuthSession();
+  const { auth, hasActiveSession, isAuthenticated, isSessionLoading, sessionError, viewerId } = useAuthSession();
   const api = useForumApi();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,8 +31,8 @@ export function SavedPostsPage() {
   const limit = Math.min(parsePositiveInt(searchParams.get("limit"), 20), 100);
 
   const savedPostsQuery = useQuery({
-    queryKey: queryKeys.savedPosts.list(auth.userId, page, limit),
-    enabled: isAuthenticated,
+    queryKey: queryKeys.savedPosts.list(viewerId ?? auth.userId, page, limit),
+    enabled: hasActiveSession,
     queryFn: () => api.savedPosts.listMine({ page, limit }),
   });
 
@@ -48,6 +48,19 @@ export function SavedPostsPage() {
       <EmptyState
         title="Sessao de autenticacao necessaria"
         description="Informe x-user-id no topo para acessar posts salvos."
+      />
+    );
+  }
+
+  if (isSessionLoading) {
+    return <LoadingState title="Validando sessao" description="Checando se o usuario informado pode acessar seus salvos." />;
+  }
+
+  if (!hasActiveSession) {
+    return (
+      <ErrorState
+        title="Sessao invalida"
+        description={sessionError ?? "O usuario informado nao existe ou nao esta ativo."}
       />
     );
   }

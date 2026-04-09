@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
+import { useAuthSession } from "../../auth-context/auth-context";
+import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
 import { useCreatePostMutation } from "../hooks/use-post-mutations";
 import { applyPostFieldErrors, toPostMutationMessage } from "../lib/post-mutation-errors";
 import {
@@ -15,6 +17,7 @@ import {
 
 export function CreatePostPage() {
   const navigate = useNavigate();
+  const { isAuthenticated, hasActiveSession, isSessionLoading, sessionError } = useAuthSession();
   const createPostMutation = useCreatePostMutation();
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -40,6 +43,28 @@ export function CreatePostPage() {
         setSubmitError(toPostMutationMessage(error, "Nao foi possivel criar o post."));
       }
     }
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <EmptyState
+        title="Sessao de autenticacao necessaria"
+        description="Informe um x-user-id valido no topo para publicar posts."
+      />
+    );
+  }
+
+  if (isSessionLoading) {
+    return <LoadingState title="Validando sessao" description="Checando se o usuario informado pode publicar." />;
+  }
+
+  if (!hasActiveSession) {
+    return (
+      <ErrorState
+        title="Sessao invalida"
+        description={sessionError ?? "O usuario informado nao existe ou nao esta ativo."}
+      />
+    );
   }
 
   return (

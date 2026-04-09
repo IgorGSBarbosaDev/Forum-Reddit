@@ -12,7 +12,12 @@ export function validateParams<TSchema extends ZodTypeAny>(schema: TSchema): Req
       return;
     }
 
-    req.params = result.data as typeof req.params;
+    Object.defineProperty(req, "params", {
+      value: result.data,
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    });
     next();
   };
 }

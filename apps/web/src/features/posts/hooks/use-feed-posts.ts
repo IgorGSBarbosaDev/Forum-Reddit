@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ListPostsQuery, PostSortBy, SortOrder } from "@forum-reddit/shared-types";
 
+import { useAuthSession } from "../../auth-context/auth-context";
 import { queryKeys } from "../../../shared/api/query-keys";
 import { useForumApi } from "../../../shared/api/use-forum-api";
 
@@ -51,6 +52,7 @@ export function normalizeFeedQuery(query: ListPostsQuery): NormalizedFeedQuery {
 
 export function useFeedPosts(query: ListPostsQuery) {
   const api = useForumApi();
+  const { viewerId } = useAuthSession();
 
   const normalizedQuery = useMemo(
     () => normalizeFeedQuery(query),
@@ -58,7 +60,7 @@ export function useFeedPosts(query: ListPostsQuery) {
   );
 
   return useQuery({
-    queryKey: queryKeys.posts.feed(normalizedQuery),
+    queryKey: queryKeys.posts.feed(normalizedQuery, viewerId),
     queryFn: () => api.posts.list(normalizedQuery),
   });
 }

@@ -12,7 +12,12 @@ export function validateBody<TSchema extends ZodTypeAny>(schema: TSchema): Reque
       return;
     }
 
-    req.body = result.data;
+    Object.defineProperty(req, "body", {
+      value: result.data,
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    });
     next();
   };
 }

@@ -63,9 +63,14 @@ export class SavedPostsRepository {
       },
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+        {
+          id: "desc",
+        },
+      ],
       select: {
         createdAt: true,
         post: {

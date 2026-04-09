@@ -2,11 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 
 import { useAuthSession } from "../../auth-context/auth-context";
 import { useForumApi } from "../../../shared/api/use-forum-api";
-import { EmptyState } from "../../../shared/ui/view-states";
+import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
 
 export function NotificationsAdminPage() {
   const api = useForumApi();
-  const { auth, isAuthenticated } = useAuthSession();
+  const { auth, isAuthenticated, hasActiveSession, isSessionLoading, sessionError } = useAuthSession();
 
   const processMutation = useMutation({
     mutationFn: () => api.notificationsAdmin.processPending(),
@@ -17,6 +17,19 @@ export function NotificationsAdminPage() {
       <EmptyState
         title="Autenticacao obrigatoria"
         description="Informe x-user-id para acessar ferramentas administrativas."
+      />
+    );
+  }
+
+  if (isSessionLoading) {
+    return <LoadingState title="Validando sessao" description="Confirmando acesso as ferramentas administrativas." />;
+  }
+
+  if (!hasActiveSession) {
+    return (
+      <ErrorState
+        title="Sessao invalida"
+        description={sessionError ?? "O usuario informado nao existe ou nao esta ativo."}
       />
     );
   }

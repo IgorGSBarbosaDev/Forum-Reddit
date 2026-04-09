@@ -81,7 +81,7 @@ export class PostsController {
     try {
       const params = request.params as unknown as PostDetailsParams;
       const body = request.body as UpdatePostStatusBody;
-      const result = await this.postsService.updateStatus(params.postId, body, request.currentUser?.id);
+      const result = await this.postsService.updateStatus(params.postId, body, request.currentUser!.id);
 
       response.status(200).json(result);
     } catch (error) {
@@ -93,7 +93,7 @@ export class PostsController {
     try {
       const params = request.params as unknown as PostDetailsParams;
       const body = request.body as UpdatePostPinBody;
-      const result = await this.postsService.updatePinnedState(params.postId, body, request.currentUser?.id);
+      const result = await this.postsService.updatePinnedState(params.postId, body, request.currentUser!.id);
 
       response.status(200).json(result);
     } catch (error) {

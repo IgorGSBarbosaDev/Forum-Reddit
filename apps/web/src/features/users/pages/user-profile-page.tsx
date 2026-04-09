@@ -16,10 +16,10 @@ export function UserProfilePage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const api = useForumApi();
-  const { auth, isAuthenticated } = useAuthSession();
+  const { auth, hasActiveSession, isAuthenticated, sessionError, viewerId } = useAuthSession();
 
   const profileQuery = useQuery({
-    queryKey: queryKeys.users.profile(userId ?? ""),
+    queryKey: queryKeys.users.profile(userId ?? "", viewerId),
     enabled: Boolean(userId),
     queryFn: async () => {
       if (!userId) {
@@ -31,8 +31,8 @@ export function UserProfilePage() {
   });
 
   const relationshipQuery = useQuery({
-    queryKey: queryKeys.users.relationship(userId ?? "", auth.userId),
-    enabled: Boolean(userId) && isAuthenticated,
+    queryKey: queryKeys.users.relationship(userId ?? "", viewerId ?? ""),
+    enabled: Boolean(userId) && hasActiveSession && Boolean(viewerId),
     queryFn: async () => {
       if (!userId) {
         throw new Error("User id is required.");
@@ -73,18 +73,22 @@ export function UserProfilePage() {
   }
 
   const name = profile.displayName || profile.username || "Deleted user";
-  const isOwnProfile = isAuthenticated && auth.userId === profile.id;
-  const isRelationshipLoading = isAuthenticated && !isOwnProfile && relationshipQuery.isLoading;
+  const isOwnProfile = hasActiveSession && viewerId === profile.id;
+  const isRelationshipLoading = hasActiveSession && !isOwnProfile && relationshipQuery.isLoading;
   const isFollowBusy = followMutation.isPending || unfollowMutation.isPending;
-  const following = isAuthenticated
+  const following = hasActiveSession
     ? (relationshipQuery.data?.following ?? profile.following)
     : false;
 
   async function handleToggleFollow() {
     setActionError(null);
 
-    if (!isAuthenticated) {
-      setActionError("Informe x-user-id no topo para seguir usuarios.");
+    if (!hasActiveSession) {
+      setActionError(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para seguir usuarios."),
+      );
       return;
     }
 
@@ -115,13 +119,13 @@ export function UserProfilePage() {
         <ul className="meta-list" aria-label="Resumo de relacionamento">
           <li>{profile.followersCount} seguidores</li>
           <li>{profile.followingCount} seguindo</li>
-          {isAuthenticated && !isOwnProfile ? (
+          {hasActiveSession && !isOwnProfile ? (
             <li>{following ? "Voce segue este usuario" : "Voce ainda nao segue"}</li>
           ) : null}
         </ul>
 
         <div className="inline-actions">
-          {isAuthenticated && !isOwnProfile ? (
+          {hasActiveSession && !isOwnProfile ? (
             <button
               type="button"
               className="button button--primary"
@@ -146,7 +150,7 @@ export function UserProfilePage() {
           </Link>
         </div>
 
-        {relationshipQuery.isError ? (
+        {hasActiveSession && relationshipQuery.isError ? (
           <p className="inline-error">Falha ao carregar relacionamento: {relationshipQuery.error.message}</p>
         ) : null}
 

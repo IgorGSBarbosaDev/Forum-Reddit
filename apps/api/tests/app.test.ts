@@ -1,9 +1,53 @@
-import test from "node:test";
+import test, { after, before, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
+import type { Express } from "express";
 import request from "supertest";
 
-import { app } from "../src/app";
+import type { PrismaClient } from "@prisma/client";
+
+import { createApiTestContext, ensureTestDatabase, resetTestDatabase } from "./helpers/test-db";
+
+let prisma: PrismaClient;
+let app: Express;
+
+async function createUser(input: {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+}) {
+  return prisma.user.create({
+    data: {
+      id: input.id,
+      username: input.username,
+      email: input.email,
+      displayName: input.displayName,
+    },
+  });
+}
+
+before(async () => {
+  await ensureTestDatabase();
+});
+
+beforeEach(async () => {
+  await resetTestDatabase();
+
+  if (prisma) {
+    await prisma.$disconnect();
+  }
+
+  const context = await createApiTestContext();
+  prisma = context.prisma;
+  app = context.app;
+});
+
+after(async () => {
+  if (prisma) {
+    await prisma.$disconnect();
+  }
+});
 
 test("GET /api/health returns ok payload", async () => {
   const response = await request(app).get("/api/health");
@@ -23,6 +67,13 @@ test("GET /api/me requires authentication", async () => {
 });
 
 test("GET /api/me returns current user id and role", async () => {
+  await createUser({
+    id: "user-123",
+    username: "user.123",
+    email: "user.123@example.com",
+    displayName: "User 123",
+  });
+
   const response = await request(app)
     .get("/api/me")
     .set("x-user-id", "user-123")
@@ -33,6 +84,15 @@ test("GET /api/me returns current user id and role", async () => {
     currentUserId: "user-123",
     role: "moderator",
   });
+});
+
+test("GET /api/me rejects unknown authenticated users", async () => {
+  const response = await request(app)
+    .get("/api/me")
+    .set("x-user-id", "ghost-user");
+
+  assert.equal(response.status, 404);
+  assert.equal(response.body.code, "CURRENT_USER_NOT_FOUND");
 });
 
 test("invalid auth header returns validation error", async () => {

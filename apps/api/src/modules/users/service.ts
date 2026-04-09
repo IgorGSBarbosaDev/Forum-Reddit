@@ -1,10 +1,14 @@
 import { NotFoundError } from "../../errors/not-found-error";
 import { createPaginationMeta } from "../../utils/pagination";
+import { CurrentUserGuard } from "./current-user-guard";
 import { mapFollower, mapFollowing, mapUserProfile } from "./mapper";
 import { UsersRepository } from "./repository";
 
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly currentUserGuard: CurrentUserGuard,
+  ) {}
 
   async getProfile(userId: string, currentUserId?: string) {
     const user = await this.usersRepository.findProfile(userId, currentUserId);
@@ -45,6 +49,7 @@ export class UsersService {
   }
 
   async getRelationship(userId: string, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
     await this.getProfile(userId, currentUserId);
     const relationship = await this.usersRepository.findRelationship(userId, currentUserId);
 

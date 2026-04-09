@@ -1,11 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router-dom";
 
 import type { UserRole } from "@forum-reddit/shared-types";
 
 import { useAuthSession } from "../../features/auth-context/auth-context";
-import { queryKeys } from "../../shared/api/query-keys";
-import { useForumApi } from "../../shared/api/use-forum-api";
 
 const NAV_ITEMS = [
   { to: "/", label: "Feed" },
@@ -14,14 +11,33 @@ const NAV_ITEMS = [
 ];
 
 export function TopBar() {
-  const { auth, isAuthenticated, setRole, setUserId, reset } = useAuthSession();
-  const api = useForumApi();
+  const {
+    auth,
+    isAuthenticated,
+    isSessionLoading,
+    sessionError,
+    sessionStatus,
+    applyPreset,
+    setRole,
+    setUserId,
+    reset,
+  } = useAuthSession();
 
-  const meQuery = useQuery({
-    queryKey: queryKeys.platform.me(auth.userId),
-    enabled: isAuthenticated,
-    queryFn: () => api.platform.getMe(),
-  });
+  function renderSessionStatus() {
+    if (!isAuthenticated) {
+      return "Modo publico";
+    }
+
+    if (isSessionLoading) {
+      return `Validando sessao de ${auth.userId}...`;
+    }
+
+    if (sessionStatus === "valid") {
+      return `Sessao ativa como ${auth.userId} (${auth.role})`;
+    }
+
+    return `Sessao invalida: ${sessionError ?? "usuario inexistente ou inativo."}`;
+  }
 
   return (
     <header className="top-bar">
@@ -45,6 +61,15 @@ export function TopBar() {
       </nav>
 
       <div className="top-bar__auth" aria-label="Configuracao de autenticacao de desenvolvimento">
+        <div className="inline-actions">
+          <button type="button" className="button button--ghost" onClick={() => applyPreset("user-1", "user")}>
+            user-1
+          </button>
+          <button type="button" className="button button--ghost" onClick={() => applyPreset("admin", "admin")}>
+            admin
+          </button>
+        </div>
+
         <label>
           <span>x-user-id</span>
           <input
@@ -73,11 +98,7 @@ export function TopBar() {
         </button>
 
         <p className="top-bar__auth-state" aria-live="polite">
-          {isAuthenticated
-            ? meQuery.isSuccess
-              ? `Autenticado como ${meQuery.data.currentUserId} (${meQuery.data.role})`
-              : "Headers ativos"
-            : "Modo publico"}
+          {renderSessionStatus()}
         </p>
       </div>
     </header>

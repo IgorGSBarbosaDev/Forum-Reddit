@@ -3,14 +3,20 @@ import { BusinessRuleError } from "../../errors/business-rule-error";
 import { ForbiddenError } from "../../errors/forbidden-error";
 import { NotFoundError } from "../../errors/not-found-error";
 import { acceptsComments } from "../../utils/content-sanitizer";
+import { CurrentUserGuard } from "../users/current-user-guard";
 import { buildCommentTree, mapCommentNode } from "./mapper";
 import { CommentsRepository } from "./repository";
 import type { CreateCommentInput, UpdateCommentInput } from "./types";
 
 export class CommentsService {
-  constructor(private readonly commentsRepository: CommentsRepository) {}
+  constructor(
+    private readonly commentsRepository: CommentsRepository,
+    private readonly currentUserGuard: CurrentUserGuard,
+  ) {}
 
   async createRootComment(postId: string, input: CreateCommentInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     await this.assertPostAllowsComments(postId);
 
     const created = await this.commentsRepository.createComment({
@@ -30,6 +36,8 @@ export class CommentsService {
   }
 
   async createReply(commentId: string, input: CreateCommentInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const parent = await this.commentsRepository.findCommentState(commentId);
 
     if (!parent) {
@@ -73,6 +81,8 @@ export class CommentsService {
   }
 
   async updateComment(commentId: string, input: UpdateCommentInput, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const comment = await this.commentsRepository.findCommentState(commentId);
 
     if (!comment) {
@@ -99,6 +109,8 @@ export class CommentsService {
   }
 
   async deleteComment(commentId: string, currentUserId: string) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const comment = await this.commentsRepository.findCommentState(commentId);
 
     if (!comment) {

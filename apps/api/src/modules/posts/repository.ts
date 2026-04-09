@@ -191,6 +191,7 @@ export class PostsRepository {
     return [
       { isPinned: "desc" },
       { [sortBy]: order },
+      { id: order },
     ];
   }
 }

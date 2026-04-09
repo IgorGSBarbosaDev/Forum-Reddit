@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import type { UpdatePostInput } from "@forum-reddit/shared-types";
 
+import { useAuthSession } from "../../auth-context/auth-context";
 import { ErrorState, LoadingState } from "../../../shared/ui/view-states";
 import { usePostDetail } from "../hooks/use-post-detail";
 import { useUpdatePostMutation } from "../hooks/use-post-mutations";
@@ -20,6 +21,7 @@ import {
 export function EditPostPage() {
   const params = useParams();
   const navigate = useNavigate();
+  const { hasActiveSession, isAuthenticated, isSessionLoading, sessionError } = useAuthSession();
 
   const postId = params.postId;
   const detailQuery = usePostDetail(postId);
@@ -49,6 +51,28 @@ export function EditPostPage() {
 
   if (!postId) {
     return <ErrorState title="Post invalido" description="O identificador do post nao foi informado." />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <ErrorState
+        title="Sessao de autenticacao necessaria"
+        description="Informe um x-user-id valido no topo para editar posts."
+      />
+    );
+  }
+
+  if (isSessionLoading) {
+    return <LoadingState title="Validando sessao" description="Checando se o usuario informado pode editar posts." />;
+  }
+
+  if (!hasActiveSession) {
+    return (
+      <ErrorState
+        title="Sessao invalida"
+        description={sessionError ?? "O usuario informado nao existe ou nao esta ativo."}
+      />
+    );
   }
 
   if (detailQuery.isLoading) {

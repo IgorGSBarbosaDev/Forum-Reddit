@@ -1,3 +1,4 @@
+import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
 import { prisma } from "../../lib/prisma";
@@ -6,11 +7,22 @@ import { requireModerator } from "../../middlewares/require-moderator";
 import { NotificationsController } from "./controller";
 import { NotificationEventsRepository } from "./repository";
 import { NotificationsService } from "./service";
+import { CurrentUserGuard } from "../users/current-user-guard";
 
-const notificationEventsRepository = new NotificationEventsRepository(prisma);
-const notificationsService = new NotificationsService(prisma, notificationEventsRepository);
-const notificationsController = new NotificationsController(notificationsService);
+export function createNotificationsRouter(prismaClient: PrismaClient) {
+  const notificationEventsRepository = new NotificationEventsRepository(prismaClient);
+  const currentUserGuard = new CurrentUserGuard(prismaClient);
+  const notificationsService = new NotificationsService(
+    prismaClient,
+    notificationEventsRepository,
+    currentUserGuard,
+  );
+  const notificationsController = new NotificationsController(notificationsService);
+  const notificationsRouter = Router();
 
-export const notificationsRouter = Router();
+  notificationsRouter.post("/process", requireAuth, requireModerator, notificationsController.processPendingEvents);
 
-notificationsRouter.post("/process", requireAuth, requireModerator, notificationsController.processPendingEvents);
+  return notificationsRouter;
+}
+
+export const notificationsRouter = createNotificationsRouter(prisma);

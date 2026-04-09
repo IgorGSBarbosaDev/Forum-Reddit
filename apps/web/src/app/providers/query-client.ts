@@ -12,16 +12,20 @@ function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   return failureCount < 2;
 }
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      gcTime: 300_000,
-      refetchOnWindowFocus: false,
-      retry: shouldRetryQuery,
+export function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
+        gcTime: 300_000,
+        refetchOnWindowFocus: false,
+        retry: shouldRetryQuery,
+      },
+      mutations: {
+        retry: 0,
+      },
     },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
+  });
+}
+
+export const queryClient = createQueryClient();

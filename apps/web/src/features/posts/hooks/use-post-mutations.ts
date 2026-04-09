@@ -7,6 +7,7 @@ import type {
   UpdatePostInput,
 } from "@forum-reddit/shared-types";
 
+import { useAuthSession } from "../../auth-context/auth-context";
 import { queryKeys } from "../../../shared/api/query-keys";
 import { useForumApi } from "../../../shared/api/use-forum-api";
 
@@ -32,12 +33,12 @@ function updateFeedCache(
   };
 }
 
-function usePostOptimisticActions(postId: string) {
+function usePostOptimisticActions(postId: string, viewerId: string | undefined) {
   const queryClient = useQueryClient();
 
   function snapshotCaches(): OptimisticCacheContext {
     return {
-      previousDetail: queryClient.getQueryData<PostDetail>(queryKeys.posts.detail(postId)),
+      previousDetail: queryClient.getQueryData<PostDetail>(queryKeys.posts.detail(postId, viewerId)),
       previousFeeds: queryClient.getQueriesData<PaginatedResponse<PostSummary>>({
         queryKey: ["posts", "feed"],
       }),
@@ -50,7 +51,7 @@ function usePostOptimisticActions(postId: string) {
     }
 
     if (context.previousDetail) {
-      queryClient.setQueryData(queryKeys.posts.detail(postId), context.previousDetail);
+      queryClient.setQueryData(queryKeys.posts.detail(postId, viewerId), context.previousDetail);
     }
 
     for (const [key, payload] of context.previousFeeds) {
@@ -59,7 +60,7 @@ function usePostOptimisticActions(postId: string) {
   }
 
   function patchLikeState(nextLikedByMe: boolean) {
-    queryClient.setQueryData<PostDetail | undefined>(queryKeys.posts.detail(postId), (current) => {
+    queryClient.setQueryData<PostDetail | undefined>(queryKeys.posts.detail(postId, viewerId), (current) => {
       if (!current) {
         return current;
       }
@@ -91,7 +92,7 @@ function usePostOptimisticActions(postId: string) {
   }
 
   function patchSaveState(nextSavedByMe: boolean) {
-    queryClient.setQueryData<PostDetail | undefined>(queryKeys.posts.detail(postId), (current) => {
+    queryClient.setQueryData<PostDetail | undefined>(queryKeys.posts.detail(postId, viewerId), (current) => {
       if (!current) {
         return current;
       }
@@ -112,7 +113,7 @@ function usePostOptimisticActions(postId: string) {
 
   async function cancelQueries() {
     await Promise.all([
-      queryClient.cancelQueries({ queryKey: queryKeys.posts.detail(postId) }),
+      queryClient.cancelQueries({ queryKey: queryKeys.posts.detail(postId, viewerId) }),
       queryClient.cancelQueries({ queryKey: ["posts", "feed"] }),
       queryClient.cancelQueries({ queryKey: ["saved-posts", "list"] }),
     ]);
@@ -120,7 +121,7 @@ function usePostOptimisticActions(postId: string) {
 
   async function invalidatePostQueries() {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId, viewerId) }),
       queryClient.invalidateQueries({ queryKey: ["posts", "feed"] }),
       queryClient.invalidateQueries({ queryKey: ["saved-posts", "list"] }),
     ]);
@@ -139,11 +140,12 @@ function usePostOptimisticActions(postId: string) {
 export function useCreatePostMutation() {
   const api = useForumApi();
   const queryClient = useQueryClient();
+  const { viewerId } = useAuthSession();
 
   return useMutation({
     mutationFn: (input: CreatePostInput) => api.posts.create(input),
     onSuccess: async (createdPost) => {
-      queryClient.setQueryData(queryKeys.posts.detail(createdPost.id), createdPost);
+      queryClient.setQueryData(queryKeys.posts.detail(createdPost.id, viewerId), createdPost);
       await queryClient.invalidateQueries({ queryKey: ["posts", "feed"] });
     },
   });
@@ -152,11 +154,12 @@ export function useCreatePostMutation() {
 export function useUpdatePostMutation(postId: string) {
   const api = useForumApi();
   const queryClient = useQueryClient();
+  const { viewerId } = useAuthSession();
 
   return useMutation({
     mutationFn: (input: UpdatePostInput) => api.posts.update(postId, input),
     onSuccess: async (updatedPost) => {
-      queryClient.setQueryData(queryKeys.posts.detail(postId), updatedPost);
+      queryClient.setQueryData(queryKeys.posts.detail(postId, viewerId), updatedPost);
       await queryClient.invalidateQueries({ queryKey: ["posts", "feed"] });
     },
   });
@@ -165,11 +168,12 @@ export function useUpdatePostMutation(postId: string) {
 export function useDeletePostMutation(postId: string) {
   const api = useForumApi();
   const queryClient = useQueryClient();
+  const { viewerId } = useAuthSession();
 
   return useMutation({
     mutationFn: () => api.posts.remove(postId),
     onSuccess: async (deletedPost) => {
-      queryClient.setQueryData(queryKeys.posts.detail(postId), deletedPost);
+      queryClient.setQueryData(queryKeys.posts.detail(postId, viewerId), deletedPost);
       await queryClient.invalidateQueries({ queryKey: ["posts", "feed"] });
     },
   });
@@ -177,7 +181,8 @@ export function useDeletePostMutation(postId: string) {
 
 export function useLikePostMutation(postId: string) {
   const api = useForumApi();
-  const actions = usePostOptimisticActions(postId);
+  const { viewerId } = useAuthSession();
+  const actions = usePostOptimisticActions(postId, viewerId);
 
   return useMutation({
     mutationFn: () => api.posts.like(postId),
@@ -198,7 +203,8 @@ export function useLikePostMutation(postId: string) {
 
 export function useUnlikePostMutation(postId: string) {
   const api = useForumApi();
-  const actions = usePostOptimisticActions(postId);
+  const { viewerId } = useAuthSession();
+  const actions = usePostOptimisticActions(postId, viewerId);
 
   return useMutation({
     mutationFn: () => api.posts.unlike(postId),
@@ -219,7 +225,8 @@ export function useUnlikePostMutation(postId: string) {
 
 export function useSavePostMutation(postId: string) {
   const api = useForumApi();
-  const actions = usePostOptimisticActions(postId);
+  const { viewerId } = useAuthSession();
+  const actions = usePostOptimisticActions(postId, viewerId);
 
   return useMutation({
     mutationFn: () => api.posts.save(postId),
@@ -240,7 +247,8 @@ export function useSavePostMutation(postId: string) {
 
 export function useUnsavePostMutation(postId: string) {
   const api = useForumApi();
-  const actions = usePostOptimisticActions(postId);
+  const { viewerId } = useAuthSession();
+  const actions = usePostOptimisticActions(postId, viewerId);
 
   return useMutation({
     mutationFn: () => api.posts.unsave(postId),

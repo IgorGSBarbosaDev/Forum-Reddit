@@ -52,9 +52,7 @@ function patchFollowingState(
 function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolean) {
   const api = useForumApi();
   const queryClient = useQueryClient();
-  const { auth } = useAuthSession();
-
-  const viewerId = auth.userId;
+  const { viewerId } = useAuthSession();
 
   return useMutation({
     mutationFn: async () => {
@@ -66,11 +64,11 @@ function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolea
     },
     onMutate: async () => {
       await Promise.all([
-        queryClient.cancelQueries({ queryKey: queryKeys.users.profile(targetUserId) }),
+        queryClient.cancelQueries({ queryKey: queryKeys.users.profile(targetUserId, viewerId) }),
         queryClient.cancelQueries({ queryKey: ["users", "followers"] }),
         queryClient.cancelQueries({ queryKey: ["users", "following"] }),
         viewerId
-          ? queryClient.cancelQueries({ queryKey: queryKeys.users.profile(viewerId) })
+          ? queryClient.cancelQueries({ queryKey: queryKeys.users.profile(viewerId, viewerId) })
           : Promise.resolve(),
         viewerId
           ? queryClient.cancelQueries({
@@ -80,9 +78,11 @@ function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolea
       ]);
 
       const context: FollowMutationContext = {
-        previousTargetProfile: queryClient.getQueryData<UserProfile>(queryKeys.users.profile(targetUserId)),
+        previousTargetProfile: queryClient.getQueryData<UserProfile>(
+          queryKeys.users.profile(targetUserId, viewerId),
+        ),
         previousViewerProfile: viewerId
-          ? queryClient.getQueryData<UserProfile>(queryKeys.users.profile(viewerId))
+          ? queryClient.getQueryData<UserProfile>(queryKeys.users.profile(viewerId, viewerId))
           : undefined,
         previousRelationship: viewerId
           ? queryClient.getQueryData<RelationshipResponse>(
@@ -97,29 +97,35 @@ function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolea
         }),
       };
 
-      queryClient.setQueryData<UserProfile | undefined>(queryKeys.users.profile(targetUserId), (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          following: nextFollowing,
-          followersCount: Math.max(0, current.followersCount + (nextFollowing ? 1 : -1)),
-        };
-      });
-
-      if (viewerId) {
-        queryClient.setQueryData<UserProfile | undefined>(queryKeys.users.profile(viewerId), (current) => {
+      queryClient.setQueryData<UserProfile | undefined>(
+        queryKeys.users.profile(targetUserId, viewerId),
+        (current) => {
           if (!current) {
             return current;
           }
 
           return {
             ...current,
-            followingCount: Math.max(0, current.followingCount + (nextFollowing ? 1 : -1)),
+            following: nextFollowing,
+            followersCount: Math.max(0, current.followersCount + (nextFollowing ? 1 : -1)),
           };
-        });
+        },
+      );
+
+      if (viewerId) {
+        queryClient.setQueryData<UserProfile | undefined>(
+          queryKeys.users.profile(viewerId, viewerId),
+          (current) => {
+            if (!current) {
+              return current;
+            }
+
+            return {
+              ...current,
+              followingCount: Math.max(0, current.followingCount + (nextFollowing ? 1 : -1)),
+            };
+          },
+        );
 
         queryClient.setQueryData<RelationshipResponse>(queryKeys.users.relationship(targetUserId, viewerId), {
           following: nextFollowing,
@@ -143,10 +149,16 @@ function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolea
         return;
       }
 
-      queryClient.setQueryData(queryKeys.users.profile(targetUserId), context.previousTargetProfile);
+      queryClient.setQueryData(
+        queryKeys.users.profile(targetUserId, viewerId),
+        context.previousTargetProfile,
+      );
 
       if (viewerId) {
-        queryClient.setQueryData(queryKeys.users.profile(viewerId), context.previousViewerProfile);
+        queryClient.setQueryData(
+          queryKeys.users.profile(viewerId, viewerId),
+          context.previousViewerProfile,
+        );
         queryClient.setQueryData(
           queryKeys.users.relationship(targetUserId, viewerId),
           context.previousRelationship,
@@ -163,10 +175,12 @@ function useOptimisticFollowMutation(targetUserId: string, nextFollowing: boolea
     },
     onSettled: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(targetUserId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(targetUserId, viewerId) }),
         queryClient.invalidateQueries({ queryKey: ["users", "followers"] }),
         queryClient.invalidateQueries({ queryKey: ["users", "following"] }),
-        viewerId ? queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(viewerId) }) : Promise.resolve(),
+        viewerId
+          ? queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(viewerId, viewerId) })
+          : Promise.resolve(),
         viewerId
           ? queryClient.invalidateQueries({
               queryKey: queryKeys.users.relationship(targetUserId, viewerId),

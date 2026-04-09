@@ -1,14 +1,18 @@
 import type { PrismaClient } from "@prisma/client";
 
+import { CurrentUserGuard } from "../users/current-user-guard";
 import { NotificationEventsRepository } from "./repository";
 
 export class NotificationsService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly notificationEventsRepository: NotificationEventsRepository,
+    private readonly currentUserGuard: CurrentUserGuard,
   ) {}
 
-  async processPendingEvents(limit = 50) {
+  async processPendingEvents(currentUserId: string, limit = 50) {
+    await this.currentUserGuard.assertActiveUser(currentUserId);
+
     const events = await this.notificationEventsRepository.findPendingEvents(limit);
     let processedCount = 0;
 
@@ -17,9 +21,20 @@ export class NotificationsService {
         where: {
           followingId: event.actorId,
           follower: {
-            notificationSettings: {
-              notifyOnFollowedPosts: true,
-            },
+            OR: [
+              {
+                notificationSettings: {
+                  is: null,
+                },
+              },
+              {
+                notificationSettings: {
+                  is: {
+                    notifyOnFollowedPosts: true,
+                  },
+                },
+              },
+            ],
           },
         },
         select: {

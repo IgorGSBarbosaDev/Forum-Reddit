@@ -26,7 +26,7 @@ function getAuthorLabel(author: { id: string; username: string | null; displayNa
 export function PostDetailPage() {
   const params = useParams();
   const postId = params.postId;
-  const { auth, isAuthenticated } = useAuthSession();
+  const { auth, hasActiveSession, isAuthenticated, sessionError, viewerId } = useAuthSession();
 
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
@@ -65,7 +65,7 @@ export function PostDetailPage() {
     return <EmptyState title="Post nao encontrado" description="O recurso solicitado nao retornou conteudo." />;
   }
 
-  const isAuthor = isAuthenticated && post.author?.id === auth.userId;
+  const isAuthor = hasActiveSession && post.author?.id === viewerId;
   const isLikeBusy = likeMutation.isPending || unlikeMutation.isPending;
   const isSaveBusy = saveMutation.isPending || unsaveMutation.isPending;
 
@@ -77,8 +77,12 @@ export function PostDetailPage() {
       return;
     }
 
-    if (!isAuthenticated) {
-      setActionFeedback("Informe x-user-id no topo para curtir posts.");
+    if (!hasActiveSession) {
+      setActionFeedback(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para curtir posts."),
+      );
       return;
     }
 
@@ -101,8 +105,12 @@ export function PostDetailPage() {
       return;
     }
 
-    if (!isAuthenticated) {
-      setActionFeedback("Informe x-user-id no topo para salvar posts.");
+    if (!hasActiveSession) {
+      setActionFeedback(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para salvar posts."),
+      );
       return;
     }
 
@@ -159,7 +167,7 @@ export function PostDetailPage() {
           ) : (
             <span>{getAuthorLabel(post.author)}</span>
           )}
-          {" • "}
+          {" - "}
           <time dateTime={post.createdAt}>{formatDateTime(post.createdAt)}</time>
         </p>
       </header>

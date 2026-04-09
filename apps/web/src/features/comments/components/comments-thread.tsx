@@ -132,6 +132,7 @@ type CommentItemProps = {
 };
 
 function CommentItem({ postId, comment, canCreateComments, isAuthenticated, currentUserId }: CommentItemProps) {
+  const { hasActiveSession, sessionError } = useAuthSession();
   const [actionError, setActionError] = useState<string | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,8 +150,12 @@ function CommentItem({ postId, comment, canCreateComments, isAuthenticated, curr
   async function handleToggleLike() {
     setActionError(null);
 
-    if (!isAuthenticated) {
-      setActionError("Informe x-user-id no topo para curtir comentarios.");
+    if (!hasActiveSession) {
+      setActionError(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para curtir comentarios."),
+      );
       return;
     }
 
@@ -166,8 +171,12 @@ function CommentItem({ postId, comment, canCreateComments, isAuthenticated, curr
   }
 
   async function handleSubmitReply(content: string) {
-    if (!isAuthenticated) {
-      throw new Error("Informe x-user-id no topo para responder comentarios.");
+    if (!hasActiveSession) {
+      throw new Error(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para responder comentarios."),
+      );
     }
 
     try {
@@ -220,9 +229,9 @@ function CommentItem({ postId, comment, canCreateComments, isAuthenticated, curr
           ) : (
             <span>{toCommentAuthorLabel(comment)}</span>
           )}
-          {" • "}
+          {" - "}
           <time dateTime={comment.createdAt}>{formatDateTime(comment.createdAt)}</time>
-          {comment.wasEdited ? " • editado" : ""}
+          {comment.wasEdited ? " - editado" : ""}
         </p>
       </header>
 
@@ -330,13 +339,17 @@ type CommentsThreadProps = {
 };
 
 export function CommentsThread({ postId, acceptsComments }: CommentsThreadProps) {
-  const { auth, isAuthenticated } = useAuthSession();
+  const { auth, hasActiveSession, isAuthenticated, sessionError, viewerId } = useAuthSession();
   const commentsQuery = useCommentTree(postId);
   const createRootCommentMutation = useCreateRootCommentMutation(postId);
 
   async function handleSubmitRootComment(content: string) {
-    if (!isAuthenticated) {
-      throw new Error("Informe x-user-id no topo para comentar.");
+    if (!hasActiveSession) {
+      throw new Error(
+        sessionError ?? (isAuthenticated
+          ? "O usuario informado nao existe ou nao esta ativo."
+          : "Informe x-user-id no topo para comentar."),
+      );
     }
 
     try {
@@ -352,7 +365,7 @@ export function CommentsThread({ postId, acceptsComments }: CommentsThreadProps)
 
       {!acceptsComments ? <p className="inline-muted">Este post nao aceita novos comentarios.</p> : null}
 
-      {acceptsComments && isAuthenticated ? (
+      {acceptsComments && hasActiveSession ? (
         <CommentComposer
           submitLabel="Publicar comentario"
           placeholder="Escreva seu comentario"
@@ -361,8 +374,12 @@ export function CommentsThread({ postId, acceptsComments }: CommentsThreadProps)
         />
       ) : null}
 
-      {acceptsComments && !isAuthenticated ? (
-        <p className="inline-muted">Informe x-user-id no topo para adicionar comentarios.</p>
+      {acceptsComments && !hasActiveSession ? (
+        <p className="inline-muted">
+          {sessionError ?? (isAuthenticated
+            ? "O usuario informado nao existe ou nao esta ativo."
+            : "Informe x-user-id no topo para adicionar comentarios.")}
+        </p>
       ) : null}
 
       {commentsQuery.isLoading ? <LoadingState title="Carregando comentarios" /> : null}
@@ -388,8 +405,8 @@ export function CommentsThread({ postId, acceptsComments }: CommentsThreadProps)
                 postId={postId}
                 comment={comment}
                 canCreateComments={acceptsComments}
-                isAuthenticated={isAuthenticated}
-                currentUserId={auth.userId}
+                isAuthenticated={hasActiveSession}
+                currentUserId={viewerId ?? auth.userId}
               />
             ))}
           </div>

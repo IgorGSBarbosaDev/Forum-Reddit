@@ -12,7 +12,12 @@ export function validateQuery<TSchema extends ZodTypeAny>(schema: TSchema): Requ
       return;
     }
 
-    req.query = result.data as typeof req.query;
+    Object.defineProperty(req, "query", {
+      value: result.data,
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    });
     next();
   };
 }
