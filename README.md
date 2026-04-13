@@ -16,8 +16,6 @@ O repositório é dividido em três partes principais:
 - `apps/web`: frontend em React, TypeScript e Vite
 - `packages/shared-types`: tipos compartilhados entre backend e frontend
 
-Também existem documentos de produto e implementação em [`docs/`](C:/Users/Igor/Documents/VSCode/Forum-Reddit/docs).
-
 ## Funcionalidades Principais
 
 - feed de posts
@@ -60,7 +58,6 @@ Forum-Reddit/
 │  └─ web/
 ├─ packages/
 │  └─ shared-types/
-├─ docs/
 ├─ docker-compose.yml
 ├─ package.json
 └─ README.md
@@ -68,16 +65,25 @@ Forum-Reddit/
 
 ## Variáveis de Ambiente
 
-O projeto usa um arquivo `.env` na raiz. O formato esperado hoje é:
+O projeto usa um arquivo `.env` em `apps/api/.env`. O formato esperado hoje é:
 
 ```env
 PORT=3000
 DATABASE_URL="postgresql://postgres:admin@localhost:5434/forum_reddit?schema=public"
 ```
 
-Se esse arquivo não existir, crie-o na raiz do projeto.
+Se esse arquivo não existir, crie-o em `apps/api/.env`.
 
 ## Como Rodar na Máquina
+
+### 0. Configure as variáveis de ambiente da API
+
+Crie o arquivo `apps/api/.env` com:
+
+```env
+PORT=3000
+DATABASE_URL="postgresql://postgres:admin@localhost:5434/forum_reddit?schema=public"
+```
 
 ### 1. Instale as dependências
 
@@ -93,7 +99,7 @@ npm install
 npm run db:up
 ```
 
-Isso sobe o container definido em [`docker-compose.yml`](C:/Users/Igor/Documents/VSCode/Forum-Reddit/docker-compose.yml) com:
+Isso sobe o container definido em [`docker-compose.yml`](./docker-compose.yml) com:
 
 - usuário: `postgres`
 - senha: `admin`
@@ -242,6 +248,12 @@ O usuário precisa existir no banco e estar ativo. Se você preencher um `x-user
 
 ## Testes
 
+Para os testes da API, garanta antes:
+
+1. PostgreSQL ativo (`npm run db:up`)
+2. Prisma Client gerado (`npm run prisma:generate`)
+3. migrations aplicadas (`npm run prisma:migrate:dev`)
+
 ### Backend
 
 ```bash
@@ -308,24 +320,14 @@ O Docker só sobe o banco. Ele não roda migration nem seed automaticamente. Ent
 
 ### Porta 5434 em uso
 
-Se houver conflito, ajuste a porta no [`docker-compose.yml`](C:/Users/Igor/Documents/VSCode/Forum-Reddit/docker-compose.yml) e no `DATABASE_URL` do `.env`.
+Se houver conflito, ajuste a porta no [`docker-compose.yml`](./docker-compose.yml) e no `DATABASE_URL` de `apps/api/.env`.
 
 ### Porta 3000 ou 5173 em uso
 
 Feche o processo que estiver ocupando a porta ou altere:
 
-- `PORT` no `.env` para a API
-- `server.port` em [`apps/web/vite.config.ts`](C:/Users/Igor/Documents/VSCode/Forum-Reddit/apps/web/vite.config.ts) para o frontend
-
-## Documentação Complementar
-
-Arquivos úteis em [`docs/`](C:/Users/Igor/Documents/VSCode/Forum-Reddit/docs):
-
-- `PRD-FORUM.md`
-- `FRONTEND-SPEC.md`
-- `GUIA-IMPLEMENTACAO-FORUM.md`
-- `PASSO-A-PASSO-FUNCIONALIDADES-FORUM.md`
-- `REQUISITOS-FORUM.MD`
+- `PORT` em `apps/api/.env` para a API
+- `server.port` em [`apps/web/vite.config.ts`](./apps/web/vite.config.ts) para o frontend
 
 ## Estado Atual da Autenticação
 
@@ -341,6 +343,7 @@ O projeto ainda usa autenticação simulada para desenvolvimento local. Isso sig
 Se quiser só subir o projeto do zero, rode:
 
 ```bash
+# crie apps/api/.env com PORT e DATABASE_URL
 npm install
 npm run db:up
 npm run prisma:generate
