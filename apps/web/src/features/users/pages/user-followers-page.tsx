@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import { useAuthSession } from "../../auth-context/auth-context";
-import { queryKeys } from "../../../shared/api/query-keys";
-import { useForumApi } from "../../../shared/api/use-forum-api";
-import { PaginationFooter } from "../../../shared/ui/pagination-footer";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { PaginationFooter } from "../../../components/ui/pagination-footer";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
+import { Link, useParams, useSearchParams } from "../../../routes/navigation";
+import { useUserFollowersQuery } from "../queries/use-user-followers-query";
 
 function parsePositiveInt(rawValue: string | null, fallback: number): number {
   if (!rawValue) {
@@ -21,27 +19,14 @@ function parsePositiveInt(rawValue: string | null, fallback: number): number {
 }
 
 export function UserFollowersPage() {
-  const params = useParams();
+  const params = useParams<{ userId?: string }>();
   const userId = params.userId;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePositiveInt(searchParams.get("page"), 1);
   const limit = Math.min(parsePositiveInt(searchParams.get("limit"), 20), 100);
 
-  const api = useForumApi();
-  const { viewerId } = useAuthSession();
-
-  const followersQuery = useQuery({
-    queryKey: queryKeys.users.followers(userId ?? "", page, limit, viewerId),
-    enabled: Boolean(userId),
-    queryFn: async () => {
-      if (!userId) {
-        throw new Error("User id is required.");
-      }
-
-      return api.users.listFollowers(userId, { page, limit });
-    },
-  });
+  const followersQuery = useUserFollowersQuery(userId, page, limit);
 
   function setPage(nextPage: number) {
     const next = new URLSearchParams(searchParams);
@@ -91,7 +76,7 @@ export function UserFollowersPage() {
 
             return (
               <li key={user.id}>
-                <Link to={`/users/${user.id}`}>{label}</Link>
+                <Link to={WebRoutes.users.byId(user.id)}>{label}</Link>
               </li>
             );
           })}

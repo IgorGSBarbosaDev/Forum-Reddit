@@ -1,13 +1,12 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { createQueryClient } from "../../../app/providers/query-client";
+import { createQueryClient } from "../../../components/providers/query-client";
 import { AuthSessionProvider } from "../../auth-context/auth-context";
+import { TestRouter } from "../../../routes/test-router";
 import { server } from "../../../test/server";
-import { CreatePostPage } from "./create-post-page";
 
 const STORAGE_KEY = "forum-reddit.dev-auth";
 
@@ -17,9 +16,7 @@ function renderPage() {
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthSessionProvider>
-        <MemoryRouter>
-          <CreatePostPage />
-        </MemoryRouter>
+        <TestRouter initialEntries={["/posts/new"]} />
       </AuthSessionProvider>
     </QueryClientProvider>,
   );

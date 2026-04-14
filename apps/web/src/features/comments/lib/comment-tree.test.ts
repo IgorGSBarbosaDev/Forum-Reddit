@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CommentNode } from "@forum-reddit/shared-types";
+import type { CommentNode } from "@forum-reddit/types";
 
 import { setCommentLikeState } from "./comment-tree";
 

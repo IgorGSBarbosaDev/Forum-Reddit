@@ -1,0 +1,23 @@
+import { useQuery } from "@tanstack/react-query";
+
+import { useAuthSession } from "../../auth-context/auth-context";
+import { queryKeys } from "../../../shared/api/query-keys";
+import { useForumApi } from "../../../shared/api/use-forum-api";
+import { fetchCommentTree } from "../fetchers/comments-fetchers";
+
+export function useCommentTreeQuery(postId: string | undefined) {
+  const api = useForumApi();
+  const { viewerId } = useAuthSession();
+
+  return useQuery({
+    queryKey: queryKeys.comments.tree(postId ?? "", viewerId),
+    enabled: Boolean(postId),
+    queryFn: async () => {
+      if (!postId) {
+        throw new Error("Post id is required.");
+      }
+
+      return fetchCommentTree(api, postId);
+    },
+  });
+}

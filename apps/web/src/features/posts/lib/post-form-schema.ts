@@ -1,4 +1,4 @@
-import type { CreatePostInput } from "@forum-reddit/shared-types";
+import type { CreatePostInput } from "@forum-reddit/types";
 import { z } from "zod";
 
 export const POST_TITLE_MAX_LENGTH = 160;

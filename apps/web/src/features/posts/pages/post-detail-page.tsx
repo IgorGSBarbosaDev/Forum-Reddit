@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
 import { CommentsThread } from "../../comments/components/comments-thread";
 import { useAuthSession } from "../../auth-context/auth-context";
+import { Link, useParams } from "../../../routes/navigation";
 import { formatCompactCount, formatDateTime } from "../../../shared/lib/formatters";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
 import {
   useDeletePostMutation,
   useLikePostMutation,
@@ -13,7 +14,7 @@ import {
   useUnsavePostMutation,
 } from "../hooks/use-post-mutations";
 import { toPostMutationMessage } from "../lib/post-mutation-errors";
-import { usePostDetail } from "../hooks/use-post-detail";
+import { usePostDetailQuery } from "../queries/use-post-detail-query";
 
 function getAuthorLabel(author: { id: string; username: string | null; displayName: string | null } | null) {
   if (!author) {
@@ -24,13 +25,13 @@ function getAuthorLabel(author: { id: string; username: string | null; displayNa
 }
 
 export function PostDetailPage() {
-  const params = useParams();
+  const params = useParams<{ postId?: string }>();
   const postId = params.postId;
   const { auth, hasActiveSession, isAuthenticated, sessionError, viewerId } = useAuthSession();
 
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  const detailQuery = usePostDetail(postId);
+  const detailQuery = usePostDetailQuery(postId);
 
   const likeMutation = useLikePostMutation(postId ?? "");
   const unlikeMutation = useUnlikePostMutation(postId ?? "");
@@ -163,7 +164,7 @@ export function PostDetailPage() {
         <p className="page-subtitle">
           Por{" "}
           {post.author ? (
-            <Link to={`/users/${post.author.id}`}>{getAuthorLabel(post.author)}</Link>
+            <Link to={WebRoutes.users.byId(post.author.id)}>{getAuthorLabel(post.author)}</Link>
           ) : (
             <span>{getAuthorLabel(post.author)}</span>
           )}
@@ -184,7 +185,7 @@ export function PostDetailPage() {
 
         <div className="inline-actions">
           {isAuthor ? (
-            <Link to={`/posts/${post.id}/edit`} className="button button--ghost">
+            <Link to={WebRoutes.posts.edit(post.id)} className="button button--ghost">
               Editar post
             </Link>
           ) : null}

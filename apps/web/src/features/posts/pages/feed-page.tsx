@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import type { PostSortBy, SortOrder } from "@forum-reddit/shared-types";
+import type { PostSortBy, SortOrder } from "@forum-reddit/types";
 
 import { PostCard } from "../components/post-card";
-import { useFeedPosts } from "../hooks/use-feed-posts";
-import { PaginationFooter } from "../../../shared/ui/pagination-footer";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { useFeedPostsQuery } from "../queries/use-feed-posts-query";
+import { Link, useSearchParams } from "../../../routes/navigation";
+import { PaginationFooter } from "../../../components/ui/pagination-footer";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
 
 const ALLOWED_SORT_BY: PostSortBy[] = ["createdAt", "updatedAt", "title"];
 const ALLOWED_ORDER: SortOrder[] = ["asc", "desc"];
@@ -58,7 +59,7 @@ export function FeedPage() {
     [limit, order, page, sortBy],
   );
 
-  const postsQuery = useFeedPosts(query);
+  const postsQuery = useFeedPostsQuery(query);
 
   function updateSearch(nextValues: Partial<typeof query>) {
     const next = new URLSearchParams(searchParams);
@@ -124,7 +125,7 @@ export function FeedPage() {
         </label>
 
         <div className="controls-grid__action">
-          <Link to="/posts/new" className="button button--primary">
+          <Link to={WebRoutes.posts.create} className="button button--primary">
             Criar post
           </Link>
         </div>
@@ -156,7 +157,7 @@ export function FeedPage() {
               title="Nenhum post encontrado"
               description="Ajuste os filtros ou crie o primeiro post deste recorte."
               action={
-                <Link to="/posts/new" className="button button--primary">
+                <Link to={WebRoutes.posts.create} className="button button--primary">
                   Criar post
                 </Link>
               }

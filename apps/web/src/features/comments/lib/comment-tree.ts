@@ -1,4 +1,4 @@
-import type { CommentNode } from "@forum-reddit/shared-types";
+import type { CommentNode } from "@forum-reddit/types";
 
 type CommentUpdater = (comment: CommentNode) => CommentNode;
 

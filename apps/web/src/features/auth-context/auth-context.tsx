@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
-import type { UserRole } from "@forum-reddit/shared-types";
+import type { UserRole } from "@forum-reddit/types";
 
 import { AppApiError } from "../../shared/api/http-client";
 import { PUBLIC_VIEWER_KEY, toViewerKey } from "../../shared/api/query-keys";

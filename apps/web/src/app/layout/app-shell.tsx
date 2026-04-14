@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { NavLink, Outlet } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
 import { queryKeys } from "../../shared/api/query-keys";
 import { useForumApi } from "../../shared/api/use-forum-api";
+import { NavLink, Outlet } from "../../routes/navigation";
 import { TopBar } from "./top-bar";
 
 const SIDE_LINKS = [
-  { to: "/", label: "Feed" },
-  { to: "/posts/new", label: "Criar post" },
-  { to: "/saved", label: "Posts salvos" },
-  { to: "/users/user-1", label: "Perfil de exemplo" },
-  { to: "/admin/tools", label: "Ferramentas admin" },
+  { to: WebRoutes.home, label: "Feed" },
+  { to: WebRoutes.posts.create, label: "Criar post" },
+  { to: WebRoutes.savedPosts, label: "Posts salvos" },
+  { to: WebRoutes.users.byId("user-1"), label: "Perfil de exemplo" },
+  { to: WebRoutes.adminTools, label: "Ferramentas admin" },
 ];
 
 export function AppShell() {

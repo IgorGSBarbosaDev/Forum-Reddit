@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import type { UpdatePostInput } from "@forum-reddit/shared-types";
+import type { UpdatePostInput } from "@forum-reddit/types";
 
 import { useAuthSession } from "../../auth-context/auth-context";
-import { ErrorState, LoadingState } from "../../../shared/ui/view-states";
-import { usePostDetail } from "../hooks/use-post-detail";
+import { ErrorState, LoadingState } from "../../../components/ui/view-states";
+import { Link, useNavigate, useParams } from "../../../routes/navigation";
+import { usePostDetailQuery } from "../queries/use-post-detail-query";
 import { useUpdatePostMutation } from "../hooks/use-post-mutations";
 import { applyPostFieldErrors, toPostMutationMessage } from "../lib/post-mutation-errors";
 import {
@@ -19,12 +20,12 @@ import {
 } from "../lib/post-form-schema";
 
 export function EditPostPage() {
-  const params = useParams();
+  const params = useParams<{ postId?: string }>();
   const navigate = useNavigate();
   const { hasActiveSession, isAuthenticated, isSessionLoading, sessionError } = useAuthSession();
 
   const postId = params.postId;
-  const detailQuery = usePostDetail(postId);
+  const detailQuery = usePostDetailQuery(postId);
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -121,7 +122,7 @@ export function EditPostPage() {
 
     try {
       await updateMutation.mutateAsync(updateInput);
-      navigate(`/posts/${postId}`);
+      navigate(WebRoutes.posts.byId(postId));
     } catch (error) {
       const hasFieldErrors = applyPostFieldErrors(error, form.setError);
       if (!hasFieldErrors) {
@@ -173,7 +174,7 @@ export function EditPostPage() {
               {updateMutation.isPending ? "Salvando..." : "Salvar alteracoes"}
             </button>
 
-            <Link to={`/posts/${postId}`} className="button button--ghost">
+            <Link to={WebRoutes.posts.byId(postId)} className="button button--ghost">
               Cancelar
             </Link>
           </div>

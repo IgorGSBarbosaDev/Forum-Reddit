@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
 import { useAuthSession } from "../../auth-context/auth-context";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { Link, useNavigate } from "../../../routes/navigation";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
 import { useCreatePostMutation } from "../hooks/use-post-mutations";
 import { applyPostFieldErrors, toPostMutationMessage } from "../lib/post-mutation-errors";
 import {
@@ -35,7 +36,7 @@ export function CreatePostPage() {
 
     try {
       const createdPost = await createPostMutation.mutateAsync(toCreatePostInput(values));
-      navigate(`/posts/${createdPost.id}`);
+      navigate(WebRoutes.posts.byId(createdPost.id));
     } catch (error) {
       const hasFieldErrors = applyPostFieldErrors(error, form.setError);
 
@@ -115,7 +116,7 @@ export function CreatePostPage() {
             <button type="submit" className="button button--primary" disabled={createPostMutation.isPending}>
               {createPostMutation.isPending ? "Publicando..." : "Publicar post"}
             </button>
-            <Link to="/" className="button button--ghost">
+            <Link to={WebRoutes.home} className="button button--ghost">
               Cancelar
             </Link>
           </div>

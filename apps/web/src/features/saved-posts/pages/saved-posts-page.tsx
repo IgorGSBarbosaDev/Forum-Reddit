@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
 import { useAuthSession } from "../../auth-context/auth-context";
 import { PostCard } from "../../posts/components/post-card";
-import { queryKeys } from "../../../shared/api/query-keys";
-import { useForumApi } from "../../../shared/api/use-forum-api";
+import { Link, useSearchParams } from "../../../routes/navigation";
 import { formatDateTime } from "../../../shared/lib/formatters";
-import { PaginationFooter } from "../../../shared/ui/pagination-footer";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { PaginationFooter } from "../../../components/ui/pagination-footer";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
+import { useSavedPostsQuery } from "../queries/use-saved-posts-query";
 
 function parsePositiveInt(rawValue: string | null, fallback: number): number {
   if (!rawValue) {
@@ -23,18 +23,13 @@ function parsePositiveInt(rawValue: string | null, fallback: number): number {
 }
 
 export function SavedPostsPage() {
-  const { auth, hasActiveSession, isAuthenticated, isSessionLoading, sessionError, viewerId } = useAuthSession();
-  const api = useForumApi();
+  const { hasActiveSession, isAuthenticated, isSessionLoading, sessionError } = useAuthSession();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePositiveInt(searchParams.get("page"), 1);
   const limit = Math.min(parsePositiveInt(searchParams.get("limit"), 20), 100);
 
-  const savedPostsQuery = useQuery({
-    queryKey: queryKeys.savedPosts.list(viewerId ?? auth.userId, page, limit),
-    enabled: hasActiveSession,
-    queryFn: () => api.savedPosts.listMine({ page, limit }),
-  });
+  const savedPostsQuery = useSavedPostsQuery(page, limit);
 
   function setPage(nextPage: number) {
     const next = new URLSearchParams(searchParams);
@@ -107,7 +102,7 @@ export function SavedPostsPage() {
             <p className="inline-muted">
               Salvo em <time dateTime={savedPost.savedAt}>{formatDateTime(savedPost.savedAt)}</time>
             </p>
-            <Link className="button button--ghost" to={`/posts/${savedPost.id}`}>
+            <Link className="button button--ghost" to={WebRoutes.posts.byId(savedPost.id)}>
               Abrir post
             </Link>
           </div>

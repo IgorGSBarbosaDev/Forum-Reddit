@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import type { PostSummary } from "@forum-reddit/shared-types";
+import type { PostSummary } from "@forum-reddit/types";
 
 import { useAuthSession } from "../../auth-context/auth-context";
+import { Link } from "../../../routes/navigation";
 import { formatCompactCount, formatDateTime } from "../../../shared/lib/formatters";
 import {
   useLikePostMutation,
@@ -82,7 +83,7 @@ export function PostCard({ post }: PostCardProps) {
         </div>
 
         <h2 className="post-card__title">
-          <Link to={`/posts/${post.id}`}>{post.title}</Link>
+          <Link to={WebRoutes.posts.byId(post.id)}>{post.title}</Link>
         </h2>
 
         <p className="post-card__preview">{post.contentPreview ?? "Sem conteudo textual."}</p>
@@ -92,7 +93,7 @@ export function PostCard({ post }: PostCardProps) {
         <p className="post-card__meta">
           Por{" "}
           {post.author ? (
-            <Link to={`/users/${post.author.id}`}>{getAuthorLabel(post)}</Link>
+            <Link to={WebRoutes.users.byId(post.author.id)}>{getAuthorLabel(post)}</Link>
           ) : (
             <span>{getAuthorLabel(post)}</span>
           )}

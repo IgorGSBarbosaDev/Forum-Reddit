@@ -1,13 +1,14 @@
-import { NavLink } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import type { UserRole } from "@forum-reddit/shared-types";
+import type { UserRole } from "@forum-reddit/types";
 
 import { useAuthSession } from "../../features/auth-context/auth-context";
+import { NavLink } from "../../routes/navigation";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Feed" },
-  { to: "/saved", label: "Salvos" },
-  { to: "/admin/tools", label: "Admin" },
+  { to: WebRoutes.home, label: "Feed" },
+  { to: WebRoutes.savedPosts, label: "Salvos" },
+  { to: WebRoutes.adminTools, label: "Admin" },
 ];
 
 export function TopBar() {

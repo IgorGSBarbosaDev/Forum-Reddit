@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
-import type { CommentNode } from "@forum-reddit/shared-types";
+import type { CommentNode } from "@forum-reddit/types";
 
 import { useAuthSession } from "../../auth-context/auth-context";
+import { Link } from "../../../routes/navigation";
 import { formatCompactCount, formatDateTime } from "../../../shared/lib/formatters";
-import { ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { ErrorState, LoadingState } from "../../../components/ui/view-states";
 import {
   useCreateReplyCommentMutation,
   useCreateRootCommentMutation,
@@ -225,7 +226,7 @@ function CommentItem({ postId, comment, canCreateComments, isAuthenticated, curr
       <header className="comment-item__header">
         <p className="comment-item__meta">
           {comment.author ? (
-            <Link to={`/users/${comment.author.id}`}>{toCommentAuthorLabel(comment)}</Link>
+            <Link to={WebRoutes.users.byId(comment.author.id)}>{toCommentAuthorLabel(comment)}</Link>
           ) : (
             <span>{toCommentAuthorLabel(comment)}</span>
           )}

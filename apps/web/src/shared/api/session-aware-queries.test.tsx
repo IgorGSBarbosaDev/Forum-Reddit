@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { createQueryClient } from "../../app/providers/query-client";
+import { createQueryClient } from "../../components/providers/query-client";
 import { AuthSessionProvider, useAuthSession } from "../../features/auth-context/auth-context";
 import { useCommentTree } from "../../features/comments/hooks/use-comment-tree";
 import { useFeedPosts } from "../../features/posts/hooks/use-feed-posts";

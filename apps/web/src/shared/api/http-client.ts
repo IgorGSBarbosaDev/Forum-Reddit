@@ -1,4 +1,4 @@
-import type { ValidationIssue } from "@forum-reddit/shared-types";
+import type { ValidationIssue } from "@forum-reddit/types";
 
 type PrimitiveQueryValue = string | number | boolean;
 type QueryParamValue = PrimitiveQueryValue | null | undefined;

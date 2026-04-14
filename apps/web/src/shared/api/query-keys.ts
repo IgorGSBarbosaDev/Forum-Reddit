@@ -1,4 +1,4 @@
-import type { PostSortBy, SortOrder } from "@forum-reddit/shared-types";
+import type { PostSortBy, SortOrder } from "@forum-reddit/types";
 
 export type FeedQueryKeyInput = {
   page: number;
@@ -19,8 +19,9 @@ export const queryKeys = {
     me: (viewerId: string, role: string) => ["platform", "me", viewerId, role] as const,
   },
   posts: {
+    feedScope: (viewerId: string | undefined) => ["posts", "feed", toViewerKey(viewerId)] as const,
     feed: (query: FeedQueryKeyInput, viewerId: string | undefined) =>
-      ["posts", "feed", query.page, query.limit, query.sortBy, query.order, toViewerKey(viewerId)] as const,
+      [...queryKeys.posts.feedScope(viewerId), query.sortBy, query.order, query.page, query.limit] as const,
     detail: (postId: string, viewerId: string | undefined) =>
       ["posts", "detail", postId, toViewerKey(viewerId)] as const,
   },
@@ -31,15 +32,20 @@ export const queryKeys = {
   users: {
     profile: (userId: string, viewerId: string | undefined) =>
       ["users", "profile", userId, toViewerKey(viewerId)] as const,
+    followersScope: (userId: string, viewerId: string | undefined) =>
+      ["users", "followers", userId, toViewerKey(viewerId)] as const,
     followers: (userId: string, page: number, limit: number, viewerId: string | undefined) =>
-      ["users", "followers", userId, page, limit, toViewerKey(viewerId)] as const,
+      [...queryKeys.users.followersScope(userId, viewerId), page, limit] as const,
+    followingScope: (userId: string, viewerId: string | undefined) =>
+      ["users", "following", userId, toViewerKey(viewerId)] as const,
     following: (userId: string, page: number, limit: number, viewerId: string | undefined) =>
-      ["users", "following", userId, page, limit, toViewerKey(viewerId)] as const,
+      [...queryKeys.users.followingScope(userId, viewerId), page, limit] as const,
     relationship: (userId: string, viewerId: string) =>
-      ["users", "relationship", userId, viewerId] as const,
+      ["users", "relationship", userId, toViewerKey(viewerId)] as const,
   },
   savedPosts: {
+    scope: (viewerId: string) => ["saved-posts", "list", viewerId] as const,
     list: (viewerId: string, page: number, limit: number) =>
-      ["saved-posts", "list", viewerId, page, limit] as const,
+      [...queryKeys.savedPosts.scope(viewerId), page, limit] as const,
   },
 };

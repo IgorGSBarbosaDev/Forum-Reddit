@@ -1,46 +1,23 @@
 import { useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { WebRoutes } from "@forum-reddit/routes";
 
 import { useAuthSession } from "../../auth-context/auth-context";
 import { useFollowUserMutation, useUnfollowUserMutation } from "../hooks/use-follow-mutations";
 import { toUserMutationMessage } from "../lib/user-mutation-errors";
-import { queryKeys } from "../../../shared/api/query-keys";
-import { useForumApi } from "../../../shared/api/use-forum-api";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
+import { Link, useParams } from "../../../routes/navigation";
+import { useUserProfileQuery, useUserRelationshipQuery } from "../queries/use-user-profile-query";
 
 export function UserProfilePage() {
-  const params = useParams();
+  const params = useParams<{ userId?: string }>();
   const userId = params.userId;
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const api = useForumApi();
   const { auth, hasActiveSession, isAuthenticated, sessionError, viewerId } = useAuthSession();
 
-  const profileQuery = useQuery({
-    queryKey: queryKeys.users.profile(userId ?? "", viewerId),
-    enabled: Boolean(userId),
-    queryFn: async () => {
-      if (!userId) {
-        throw new Error("User id is required.");
-      }
-
-      return api.users.getProfile(userId);
-    },
-  });
-
-  const relationshipQuery = useQuery({
-    queryKey: queryKeys.users.relationship(userId ?? "", viewerId ?? ""),
-    enabled: Boolean(userId) && hasActiveSession && Boolean(viewerId),
-    queryFn: async () => {
-      if (!userId) {
-        throw new Error("User id is required.");
-      }
-
-      return api.users.getRelationship(userId);
-    },
-  });
+  const profileQuery = useUserProfileQuery(userId);
+  const relationshipQuery = useUserRelationshipQuery(userId, hasActiveSession);
 
   const followMutation = useFollowUserMutation(userId ?? "");
   const unfollowMutation = useUnfollowUserMutation(userId ?? "");
@@ -142,10 +119,10 @@ export function UserProfilePage() {
             </button>
           ) : null}
 
-          <Link className="button button--ghost" to={`/users/${profile.id}/followers`}>
+          <Link className="button button--ghost" to={WebRoutes.users.followers(profile.id)}>
             Ver seguidores
           </Link>
-          <Link className="button button--ghost" to={`/users/${profile.id}/following`}>
+          <Link className="button button--ghost" to={WebRoutes.users.following(profile.id)}>
             Ver seguindo
           </Link>
         </div>

@@ -1,16 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
-
 import { useAuthSession } from "../../auth-context/auth-context";
-import { useForumApi } from "../../../shared/api/use-forum-api";
-import { EmptyState, ErrorState, LoadingState } from "../../../shared/ui/view-states";
+import { EmptyState, ErrorState, LoadingState } from "../../../components/ui/view-states";
+import { useProcessNotificationsMutation } from "../queries/use-process-notifications-mutation";
 
 export function NotificationsAdminPage() {
-  const api = useForumApi();
   const { auth, isAuthenticated, hasActiveSession, isSessionLoading, sessionError } = useAuthSession();
-
-  const processMutation = useMutation({
-    mutationFn: () => api.notificationsAdmin.processPending(),
-  });
+  const processMutation = useProcessNotificationsMutation();
 
   if (!isAuthenticated) {
     return (
