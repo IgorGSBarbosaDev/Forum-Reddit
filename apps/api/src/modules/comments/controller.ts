@@ -1,8 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
 
-import { CommentsService } from "./service";
-import { commentReplyParamsSchema, createCommentBodySchema, postCommentParamsSchema, updateCommentBodySchema } from "./schema";
+import { CommentsService } from "@forum-reddit/core";
+import {
+  commentReplyParamsSchema,
+  createCommentBodySchema,
+  postCommentParamsSchema,
+  updateCommentBodySchema,
+} from "@forum-reddit/types";
 
 type PostCommentParams = z.infer<typeof postCommentParamsSchema>;
 type CommentReplyParams = z.infer<typeof commentReplyParamsSchema>;

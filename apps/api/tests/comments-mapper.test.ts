@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildCommentTree } from "../src/modules/comments/mapper";
+import { buildCommentTree } from "@forum-reddit/core";
 
 test("buildCommentTree nests replies under their parent", () => {
   const comments = [

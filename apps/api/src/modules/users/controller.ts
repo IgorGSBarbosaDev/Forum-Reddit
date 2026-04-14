@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
 
-import { userListQuerySchema, userProfileParamsSchema } from "./schema";
-import { UsersService } from "./service";
+import { UsersService } from "@forum-reddit/core";
+import { userListQuerySchema, userProfileParamsSchema } from "@forum-reddit/types";
 
 type UserProfileParams = z.infer<typeof userProfileParamsSchema>;
 type UserListQuery = z.infer<typeof userListQuerySchema>;

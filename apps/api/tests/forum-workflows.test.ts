@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import type { Express } from "express";
 import request from "supertest";
 
-import { PostStatus, UserStatus, type PrismaClient } from "@prisma/client";
+import { NotificationEventType, PostStatus, UserStatus, type PrismaClient } from "@prisma/client";
 
 import { createApiTestContext, ensureTestDatabase, resetTestDatabase } from "./helpers/test-db";
 
@@ -365,4 +365,82 @@ test("POST /api/internal/notifications/process rejects unknown moderators", asyn
 
   assert.equal(response.status, 404);
   assert.equal(response.body.code, "CURRENT_USER_NOT_FOUND");
+});
+
+test("POST /api/internal/notifications/process is idempotent and skips fresh claims", async () => {
+  await createUser({
+    id: "author-claim",
+    username: "author.claim",
+    email: "author.claim@example.com",
+    displayName: "Author Claim",
+  });
+  await createUser({
+    id: "follower-claim",
+    username: "follower.claim",
+    email: "follower.claim@example.com",
+    displayName: "Follower Claim",
+  });
+  await createUser({
+    id: "moderator-claim",
+    username: "moderator.claim",
+    email: "moderator.claim@example.com",
+    displayName: "Moderator Claim",
+  });
+
+  await prisma.follow.create({
+    data: {
+      followerId: "follower-claim",
+      followingId: "author-claim",
+    },
+  });
+
+  await prisma.notificationEvent.createMany({
+    data: [
+      {
+        id: "event-unclaimed",
+        type: NotificationEventType.POST_PUBLISHED,
+        actorId: "author-claim",
+      },
+      {
+        id: "event-fresh-claim",
+        type: NotificationEventType.POST_PUBLISHED,
+        actorId: "author-claim",
+        claimedAt: new Date(),
+        claimedBy: "other-worker",
+      },
+    ],
+  });
+
+  const firstProcess = await request(app)
+    .post("/api/internal/notifications/process")
+    .set("x-user-id", "moderator-claim")
+    .set("x-user-role", "moderator");
+
+  assert.equal(firstProcess.status, 200);
+  assert.equal(firstProcess.body.processedCount, 1);
+
+  const secondProcess = await request(app)
+    .post("/api/internal/notifications/process")
+    .set("x-user-id", "moderator-claim")
+    .set("x-user-role", "moderator");
+
+  assert.equal(secondProcess.status, 200);
+  assert.equal(secondProcess.body.processedCount, 0);
+
+  const processedEvent = await prisma.notificationEvent.findUniqueOrThrow({
+    where: {
+      id: "event-unclaimed",
+    },
+  });
+  const freshClaimEvent = await prisma.notificationEvent.findUniqueOrThrow({
+    where: {
+      id: "event-fresh-claim",
+    },
+  });
+
+  assert.ok(processedEvent.processedAt);
+  assert.equal(processedEvent.claimedAt, null);
+  assert.equal(processedEvent.claimedBy, null);
+  assert.equal(freshClaimEvent.processedAt, null);
+  assert.equal(freshClaimEvent.claimedBy, "other-worker");
 });

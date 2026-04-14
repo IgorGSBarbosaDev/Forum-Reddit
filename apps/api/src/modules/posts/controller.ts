@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
 
+import { PostsService } from "@forum-reddit/core";
 import {
   createPostBodySchema,
   listPostsQuerySchema,
@@ -8,8 +9,7 @@ import {
   updatePostBodySchema,
   updatePostPinBodySchema,
   updatePostStatusBodySchema,
-} from "./schema";
-import { PostsService } from "./service";
+} from "@forum-reddit/types";
 
 type ListPostsQuery = z.infer<typeof listPostsQuerySchema>;
 type PostDetailsParams = z.infer<typeof postDetailsParamsSchema>;

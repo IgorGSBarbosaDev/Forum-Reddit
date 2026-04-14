@@ -3,13 +3,26 @@ import "dotenv/config";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "@forum-reddit/database";
 import { Client } from "pg";
 
 import { createApp } from "../../src/app";
 
 const TEST_DATABASE_NAME = "forum_reddit_test";
+
+function createDatabaseUnavailableError(error: unknown) {
+  const details =
+    error instanceof Error && error.message
+      ? error.message
+      : "Unknown database connectivity error.";
+
+  return new Error(
+    `Postgres de teste indisponivel em ${buildTestDatabaseUrl().host}. ` +
+    `Suba o banco com "npm run test:api:db:up" antes de executar a suite de integracao. ` +
+    `Detalhes: ${details}`,
+  );
+}
 
 function getBaseDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -42,7 +55,7 @@ function quoteIdentifier(identifier: string) {
 }
 
 async function readMigrationSql() {
-  const migrationsDir = path.resolve(process.cwd(), "prisma/migrations");
+  const migrationsDir = path.resolve(process.cwd(), "../../packages/database/prisma/migrations");
   const entries = await readdir(migrationsDir, { withFileTypes: true });
   const migrationDirs = entries
     .filter((entry) => entry.isDirectory())
@@ -67,7 +80,11 @@ export async function ensureTestDatabase() {
     connectionString: buildAdminDatabaseUrl().toString(),
   });
 
-  await adminClient.connect();
+  try {
+    await adminClient.connect();
+  } catch (error) {
+    throw createDatabaseUnavailableError(error);
+  }
 
   try {
     const existing = await adminClient.query<{ datname: string }>(
@@ -88,7 +105,11 @@ export async function resetTestDatabase() {
     connectionString: buildTestDatabaseUrl().toString(),
   });
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    throw createDatabaseUnavailableError(error);
+  }
 
   try {
     const migrationSql = await readMigrationSql();
@@ -106,13 +127,7 @@ export async function resetTestDatabase() {
 }
 
 export function createTestPrismaClient() {
-  const adapter = new PrismaPg({
-    connectionString: buildTestDatabaseUrl().toString(),
-  });
-
-  return new PrismaClient({
-    adapter,
-  });
+  return createPrismaClient(buildTestDatabaseUrl().toString()) as PrismaClient;
 }
 
 export async function createApiTestContext() {

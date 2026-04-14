@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
 
-import { listSavedPostsQuerySchema, savedPostParamsSchema } from "./schema";
-import { SavedPostsService } from "./service";
+import { SavedPostsService } from "@forum-reddit/core";
+import { listSavedPostsQuerySchema, savedPostParamsSchema } from "@forum-reddit/types";
 
 type SavedPostParams = z.infer<typeof savedPostParamsSchema>;
 type ListSavedPostsQuery = z.infer<typeof listSavedPostsQuerySchema>;

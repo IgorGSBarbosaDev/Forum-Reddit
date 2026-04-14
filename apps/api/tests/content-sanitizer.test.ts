@@ -1,10 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import {
+  REMOVED_COMMENT_CONTENT,
+  REMOVED_POST_TITLE,
+  acceptsComments,
+  sanitizeAuthor,
+  sanitizeCommentPublicContent,
+  sanitizePostPublicContent,
+} from "@forum-reddit/core";
 import { PostStatus, UserStatus } from "@prisma/client";
-
-import { REMOVED_COMMENT_CONTENT, REMOVED_POST_TITLE } from "../src/constants/forum";
-import { acceptsComments, sanitizeAuthor, sanitizeCommentPublicContent, sanitizePostPublicContent } from "../src/utils/content-sanitizer";
 
 test("sanitizeAuthor hides removed users", () => {
   const result = sanitizeAuthor({

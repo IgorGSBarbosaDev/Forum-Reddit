@@ -1,18 +1,29 @@
 import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
+import { CurrentUserGuard } from "@forum-reddit/auth";
+import {
+  NotificationEventsRepository,
+  PostsRepository,
+  PostsService,
+} from "@forum-reddit/core";
+import { ApiRoutes } from "@forum-reddit/routes";
+import {
+  createPostBodySchema,
+  listPostsQuerySchema,
+  postDetailsParamsSchema,
+  updatePostBodySchema,
+  updatePostPinBodySchema,
+  updatePostStatusBodySchema,
+} from "@forum-reddit/types";
+
 import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
 import { requireModerator } from "../../middlewares/require-moderator";
 import { validateBody } from "../../middlewares/validate-body";
 import { validateParams } from "../../middlewares/validate-params";
 import { validateQuery } from "../../middlewares/validate-query";
-import { NotificationEventsRepository } from "../notifications/repository";
-import { CurrentUserGuard } from "../users/current-user-guard";
 import { PostsController } from "./controller";
-import { PostsRepository } from "./repository";
-import { createPostBodySchema, listPostsQuerySchema, postDetailsParamsSchema, updatePostBodySchema, updatePostPinBodySchema, updatePostStatusBodySchema } from "./schema";
-import { PostsService } from "./service";
 
 export function createPostsRouter(prismaClient: PrismaClient) {
   const postsRepository = new PostsRepository(prismaClient);
@@ -28,18 +39,27 @@ export function createPostsRouter(prismaClient: PrismaClient) {
   const postsRouter = Router();
 
   postsRouter.get("/", validateQuery(listPostsQuerySchema), postsController.listPosts);
-  postsRouter.get("/:postId", validateParams(postDetailsParamsSchema), postsController.getPost);
+  postsRouter.get(
+    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
+    validateParams(postDetailsParamsSchema),
+    postsController.getPost,
+  );
   postsRouter.post("/", requireAuth, validateBody(createPostBodySchema), postsController.createPost);
   postsRouter.patch(
-    "/:postId",
+    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
     requireAuth,
     validateParams(postDetailsParamsSchema),
     validateBody(updatePostBodySchema),
     postsController.updatePost,
   );
-  postsRouter.delete("/:postId", requireAuth, validateParams(postDetailsParamsSchema), postsController.deletePost);
+  postsRouter.delete(
+    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
+    requireAuth,
+    validateParams(postDetailsParamsSchema),
+    postsController.deletePost,
+  );
   postsRouter.patch(
-    "/:postId/status",
+    ApiRoutes.posts.status().replace(`${ApiRoutes.posts.root}/`, ""),
     requireAuth,
     requireModerator,
     validateParams(postDetailsParamsSchema),
@@ -47,7 +67,7 @@ export function createPostsRouter(prismaClient: PrismaClient) {
     postsController.updateStatus,
   );
   postsRouter.patch(
-    "/:postId/pin",
+    ApiRoutes.posts.pin().replace(`${ApiRoutes.posts.root}/`, ""),
     requireAuth,
     requireModerator,
     validateParams(postDetailsParamsSchema),

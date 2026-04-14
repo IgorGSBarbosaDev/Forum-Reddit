@@ -1,14 +1,15 @@
 import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
+import { CurrentUserGuard } from "@forum-reddit/auth";
+import { FollowsRepository, FollowsService } from "@forum-reddit/core";
+import { ApiRoutes } from "@forum-reddit/routes";
+import { userIdParamsSchema } from "@forum-reddit/types";
+
 import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
 import { validateParams } from "../../middlewares/validate-params";
-import { userIdParamsSchema } from "../../schemas/common/id.schema";
-import { CurrentUserGuard } from "../users/current-user-guard";
 import { FollowsController } from "./controller";
-import { FollowsRepository } from "./repository";
-import { FollowsService } from "./service";
 
 export function createFollowsRouter(prismaClient: PrismaClient) {
   const followsRepository = new FollowsRepository(prismaClient);
@@ -17,9 +18,14 @@ export function createFollowsRouter(prismaClient: PrismaClient) {
   const followsController = new FollowsController(followsService);
   const followsRouter = Router();
 
-  followsRouter.post("/:userId/follow", requireAuth, validateParams(userIdParamsSchema), followsController.followUser);
+  followsRouter.post(
+    ApiRoutes.users.follow().replace(`${ApiRoutes.users.root}/`, ""),
+    requireAuth,
+    validateParams(userIdParamsSchema),
+    followsController.followUser,
+  );
   followsRouter.delete(
-    "/:userId/follow",
+    ApiRoutes.users.follow().replace(`${ApiRoutes.users.root}/`, ""),
     requireAuth,
     validateParams(userIdParamsSchema),
     followsController.unfollowUser,

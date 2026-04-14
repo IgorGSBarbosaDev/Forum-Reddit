@@ -1,8 +1,6 @@
 import type { RequestHandler } from "express";
 
-import { AUTHORIZED_MODERATOR_ROLES } from "../constants/forum";
-import { AuthenticationRequiredError } from "../errors/authentication-required-error";
-import { ForbiddenError } from "../errors/forbidden-error";
+import { AuthenticationRequiredError, AUTHORIZED_MODERATOR_ROLES, ForbiddenError } from "@forum-reddit/core";
 
 export const requireModerator: RequestHandler = (request, _response, next) => {
   if (!request.currentUser) {

@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 
-import { AuthenticationRequiredError } from "../errors/authentication-required-error";
-import { DomainError } from "../errors/domain-error";
+import { AuthenticationRequiredError, DomainError } from "@forum-reddit/core";
+
 import { RequestValidationError } from "../errors/request-validation-error";
 
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {

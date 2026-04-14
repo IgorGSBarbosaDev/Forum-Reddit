@@ -1,14 +1,15 @@
 import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
+import { CurrentUserGuard } from "@forum-reddit/auth";
+import { ReactionsRepository, ReactionsService } from "@forum-reddit/core";
+import { ApiRoutes } from "@forum-reddit/routes";
+import { commentIdParamsSchema, postIdParamsSchema } from "@forum-reddit/types";
+
 import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
 import { validateParams } from "../../middlewares/validate-params";
-import { commentIdParamsSchema, postIdParamsSchema } from "../../schemas/common/id.schema";
-import { CurrentUserGuard } from "../users/current-user-guard";
 import { ReactionsController } from "./controller";
-import { ReactionsRepository } from "./repository";
-import { ReactionsService } from "./service";
 
 export function createReactionsRouter(prismaClient: PrismaClient) {
   const reactionsRepository = new ReactionsRepository(prismaClient);
@@ -17,21 +18,26 @@ export function createReactionsRouter(prismaClient: PrismaClient) {
   const reactionsController = new ReactionsController(reactionsService);
   const reactionsRouter = Router();
 
-  reactionsRouter.post("/posts/:postId/like", requireAuth, validateParams(postIdParamsSchema), reactionsController.likePost);
+  reactionsRouter.post(
+    ApiRoutes.posts.like().replace(/^\//, ""),
+    requireAuth,
+    validateParams(postIdParamsSchema),
+    reactionsController.likePost,
+  );
   reactionsRouter.delete(
-    "/posts/:postId/like",
+    ApiRoutes.posts.like().replace(/^\//, ""),
     requireAuth,
     validateParams(postIdParamsSchema),
     reactionsController.unlikePost,
   );
   reactionsRouter.post(
-    "/comments/:commentId/like",
+    ApiRoutes.comments.like().replace(/^\//, ""),
     requireAuth,
     validateParams(commentIdParamsSchema),
     reactionsController.likeComment,
   );
   reactionsRouter.delete(
-    "/comments/:commentId/like",
+    ApiRoutes.comments.like().replace(/^\//, ""),
     requireAuth,
     validateParams(commentIdParamsSchema),
     reactionsController.unlikeComment,
