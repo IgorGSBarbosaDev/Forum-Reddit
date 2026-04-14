@@ -1,15 +1,15 @@
 {
-  "name": "@forum-reddit/shared-types",
+  "name": "@forum-reddit/infra",
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "dependencies": {
-    "@forum-reddit/types": "file:../types"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.6.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

@@ -7,14 +7,18 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "test": "node --import tsx --test --test-concurrency=1 tests/**/*.test.ts",
-    "start": "node dist/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "test:unit": "node --import tsx --test tests/content-sanitizer.test.ts tests/comments-mapper.test.ts",
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/app.test.ts tests/forum-workflows.test.ts",
+    "start": "node --import tsx dist/server.js"
   },
   "type": "commonjs",
   "dependencies": {
+    "@forum-reddit/auth": "file:../../packages/auth",
+    "@forum-reddit/core": "file:../../packages/core",
+    "@forum-reddit/database": "file:../../packages/database",
+    "@forum-reddit/jobs": "file:../../packages/jobs",
+    "@forum-reddit/routes": "file:../../packages/routes",
+    "@forum-reddit/types": "file:../../packages/types",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "dotenv": "^17.4.0",

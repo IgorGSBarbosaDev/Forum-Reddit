@@ -12,13 +12,14 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@forum-reddit/shared-types": "file:../../packages/shared-types",
+    "@forum-reddit/routes": "file:../../packages/routes",
+    "@forum-reddit/types": "file:../../packages/types",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.59.16",
+    "@tanstack/react-router": "^1.168.21",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.72.1",
-    "react-router-dom": "^6.28.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
