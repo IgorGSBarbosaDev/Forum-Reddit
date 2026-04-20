@@ -13,7 +13,7 @@ Arquivos:
 - `modules/users/mapper.ts`
 - `modules/users/schema.ts`
 - `modules/users/types.ts`
-- `modules/users/current-user-guard.ts`
+- `packages/auth/src/current-user-guard.ts`
 
 ## `current-user-guard.ts`
 
@@ -399,4 +399,3 @@ Marca evento como processado e grava resumo.
 2. `CurrentUserGuard` e regra transversal do dominio
 3. payloads de mutacao pequenos simplificam contrato
 4. notifications ja apontam para um desenho orientado a eventos
-

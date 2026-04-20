@@ -2,7 +2,7 @@
 
 Este arquivo conecta API, Web e Prisma.
 
-## 1. `packages/shared-types`
+## 1. `packages/types`
 
 Objetivo:
 
@@ -78,7 +78,7 @@ Ele reduz:
 
 Arquivo:
 
-- `apps/api/prisma/schema.prisma`
+- `packages/database/prisma/schema.prisma`
 
 ## Enums
 
@@ -135,7 +135,7 @@ Fila de eventos internos, com `processedAt` e `payload`.
 
 Arquivo:
 
-- `apps/api/prisma/seed.ts`
+- `packages/database/prisma/seed.ts`
 
 Cria usuarios de desenvolvimento:
 
@@ -143,4 +143,3 @@ Cria usuarios de desenvolvimento:
 - `user-1`
 - `user-2`
 - `moderator-1`
-
