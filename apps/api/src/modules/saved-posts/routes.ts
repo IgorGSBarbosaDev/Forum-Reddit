@@ -20,13 +20,13 @@ export function createSavedPostsRouter(prismaClient: PrismaClient) {
   const savedPostsRouter = Router();
 
   savedPostsRouter.post(
-    ApiRoutes.posts.save().replace(/^\//, ""),
+    ApiRoutes.posts.save(),
     requireAuth,
     validateParams(savedPostParamsSchema),
     savedPostsController.savePost,
   );
   savedPostsRouter.delete(
-    ApiRoutes.posts.save().replace(/^\//, ""),
+    ApiRoutes.posts.save(),
     requireAuth,
     validateParams(savedPostParamsSchema),
     savedPostsController.unsavePost,

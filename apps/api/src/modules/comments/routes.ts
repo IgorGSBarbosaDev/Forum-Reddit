@@ -25,33 +25,33 @@ export function createCommentsRouter(prismaClient: PrismaClient) {
   const commentsRouter = Router();
 
   commentsRouter.post(
-    ApiRoutes.posts.comments().replace(/^\//, ""),
+    ApiRoutes.posts.comments(),
     requireAuth,
     validateParams(postCommentParamsSchema),
     validateBody(createCommentBodySchema),
     commentsController.createRootComment,
   );
   commentsRouter.get(
-    ApiRoutes.posts.comments().replace(/^\//, ""),
+    ApiRoutes.posts.comments(),
     validateParams(postCommentParamsSchema),
     commentsController.listComments,
   );
   commentsRouter.post(
-    ApiRoutes.comments.replies().replace(/^\//, ""),
+    ApiRoutes.comments.replies(),
     requireAuth,
     validateParams(commentReplyParamsSchema),
     validateBody(createCommentBodySchema),
     commentsController.createReply,
   );
   commentsRouter.patch(
-    ApiRoutes.comments.byId().replace(/^\//, ""),
+    ApiRoutes.comments.byId(),
     requireAuth,
     validateParams(commentReplyParamsSchema),
     validateBody(updateCommentBodySchema),
     commentsController.updateComment,
   );
   commentsRouter.delete(
-    ApiRoutes.comments.byId().replace(/^\//, ""),
+    ApiRoutes.comments.byId(),
     requireAuth,
     validateParams(commentReplyParamsSchema),
     commentsController.deleteComment,

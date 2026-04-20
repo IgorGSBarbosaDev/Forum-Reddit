@@ -19,25 +19,25 @@ export function createReactionsRouter(prismaClient: PrismaClient) {
   const reactionsRouter = Router();
 
   reactionsRouter.post(
-    ApiRoutes.posts.like().replace(/^\//, ""),
+    ApiRoutes.posts.like(),
     requireAuth,
     validateParams(postIdParamsSchema),
     reactionsController.likePost,
   );
   reactionsRouter.delete(
-    ApiRoutes.posts.like().replace(/^\//, ""),
+    ApiRoutes.posts.like(),
     requireAuth,
     validateParams(postIdParamsSchema),
     reactionsController.unlikePost,
   );
   reactionsRouter.post(
-    ApiRoutes.comments.like().replace(/^\//, ""),
+    ApiRoutes.comments.like(),
     requireAuth,
     validateParams(commentIdParamsSchema),
     reactionsController.likeComment,
   );
   reactionsRouter.delete(
-    ApiRoutes.comments.like().replace(/^\//, ""),
+    ApiRoutes.comments.like(),
     requireAuth,
     validateParams(commentIdParamsSchema),
     reactionsController.unlikeComment,

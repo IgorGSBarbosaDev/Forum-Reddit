@@ -9,6 +9,7 @@ import { userIdParamsSchema } from "@forum-reddit/types";
 import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
 import { validateParams } from "../../middlewares/validate-params";
+import { createChildRoute } from "../../routes/route-path";
 import { FollowsController } from "./controller";
 
 export function createFollowsRouter(prismaClient: PrismaClient) {
@@ -19,13 +20,13 @@ export function createFollowsRouter(prismaClient: PrismaClient) {
   const followsRouter = Router();
 
   followsRouter.post(
-    ApiRoutes.users.follow().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.follow()),
     requireAuth,
     validateParams(userIdParamsSchema),
     followsController.followUser,
   );
   followsRouter.delete(
-    ApiRoutes.users.follow().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.follow()),
     requireAuth,
     validateParams(userIdParamsSchema),
     followsController.unfollowUser,

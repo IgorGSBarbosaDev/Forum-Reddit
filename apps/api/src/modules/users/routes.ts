@@ -10,6 +10,7 @@ import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
 import { validateParams } from "../../middlewares/validate-params";
 import { validateQuery } from "../../middlewares/validate-query";
+import { createChildRoute } from "../../routes/route-path";
 import { UsersController } from "./controller";
 
 export function createUsersRouter(prismaClient: PrismaClient) {
@@ -20,24 +21,24 @@ export function createUsersRouter(prismaClient: PrismaClient) {
   const usersRouter = Router();
 
   usersRouter.get(
-    ApiRoutes.users.byId().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.byId()),
     validateParams(userProfileParamsSchema),
     usersController.getProfile,
   );
   usersRouter.get(
-    ApiRoutes.users.followers().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.followers()),
     validateParams(userProfileParamsSchema),
     validateQuery(userListQuerySchema),
     usersController.listFollowers,
   );
   usersRouter.get(
-    ApiRoutes.users.following().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.following()),
     validateParams(userProfileParamsSchema),
     validateQuery(userListQuerySchema),
     usersController.listFollowing,
   );
   usersRouter.get(
-    ApiRoutes.users.relationship().replace(`${ApiRoutes.users.root}/`, ""),
+    createChildRoute(ApiRoutes.users.root, ApiRoutes.users.relationship()),
     requireAuth,
     validateParams(userProfileParamsSchema),
     usersController.getRelationship,

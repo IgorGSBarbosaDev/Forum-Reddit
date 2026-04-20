@@ -19,10 +19,11 @@ import {
 
 import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middlewares/require-auth";
-import { requireModerator } from "../../middlewares/require-moderator";
+import { createRequireModerator } from "../../middlewares/require-moderator";
 import { validateBody } from "../../middlewares/validate-body";
 import { validateParams } from "../../middlewares/validate-params";
 import { validateQuery } from "../../middlewares/validate-query";
+import { createChildRoute } from "../../routes/route-path";
 import { PostsController } from "./controller";
 
 export function createPostsRouter(prismaClient: PrismaClient) {
@@ -37,29 +38,30 @@ export function createPostsRouter(prismaClient: PrismaClient) {
   );
   const postsController = new PostsController(postsService);
   const postsRouter = Router();
+  const requireModerator = createRequireModerator(currentUserGuard);
 
   postsRouter.get("/", validateQuery(listPostsQuerySchema), postsController.listPosts);
   postsRouter.get(
-    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
+    createChildRoute(ApiRoutes.posts.root, ApiRoutes.posts.byId()),
     validateParams(postDetailsParamsSchema),
     postsController.getPost,
   );
   postsRouter.post("/", requireAuth, validateBody(createPostBodySchema), postsController.createPost);
   postsRouter.patch(
-    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
+    createChildRoute(ApiRoutes.posts.root, ApiRoutes.posts.byId()),
     requireAuth,
     validateParams(postDetailsParamsSchema),
     validateBody(updatePostBodySchema),
     postsController.updatePost,
   );
   postsRouter.delete(
-    ApiRoutes.posts.byId().replace(`${ApiRoutes.posts.root}/`, ""),
+    createChildRoute(ApiRoutes.posts.root, ApiRoutes.posts.byId()),
     requireAuth,
     validateParams(postDetailsParamsSchema),
     postsController.deletePost,
   );
   postsRouter.patch(
-    ApiRoutes.posts.status().replace(`${ApiRoutes.posts.root}/`, ""),
+    createChildRoute(ApiRoutes.posts.root, ApiRoutes.posts.status()),
     requireAuth,
     requireModerator,
     validateParams(postDetailsParamsSchema),
@@ -67,7 +69,7 @@ export function createPostsRouter(prismaClient: PrismaClient) {
     postsController.updateStatus,
   );
   postsRouter.patch(
-    ApiRoutes.posts.pin().replace(`${ApiRoutes.posts.root}/`, ""),
+    createChildRoute(ApiRoutes.posts.root, ApiRoutes.posts.pin()),
     requireAuth,
     requireModerator,
     validateParams(postDetailsParamsSchema),

@@ -7,5 +7,3 @@ export const REMOVED_COMMENT_CONTENT = "[comment removed]";
 
 export const FEED_VISIBLE_POST_STATUSES: PostStatus[] = [PostStatus.ACTIVE, PostStatus.BLOCKED];
 export const COMMENTABLE_POST_STATUSES: PostStatus[] = [PostStatus.ACTIVE];
-
-export const AUTHORIZED_MODERATOR_ROLES = ["moderator", "admin"] as const;
